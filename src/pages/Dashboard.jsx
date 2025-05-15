@@ -77,28 +77,32 @@ const Dashboard = () => {
       label: 'Messages Created',
       value: '12',
       icon: <FaEnvelope className="w-4 h-4" />,
-      color: 'from-blue-500/20 to-purple-500/20',
+      color: 'bg-blue-500/10',
+      textColor: 'text-blue-400',
       link: '/messages'
     },
     {
       label: 'Files Secured',
       value: '34',
       icon: <FaFileAlt className="w-4 h-4" />,
-      color: 'from-green-500/20 to-emerald-500/20',
+      color: 'bg-emerald-500/10',
+      textColor: 'text-emerald-400',
       link: '/vault'
     },
     {
       label: 'Trusted Contacts',
       value: '5',
       icon: <FaUserFriends className="w-4 h-4" />,
-      color: 'from-yellow-500/20 to-orange-500/20',
+      color: 'bg-amber-500/10',
+      textColor: 'text-amber-400',
       link: '/trusted-contacts'
     },
     {
       label: 'Scheduled Deliveries',
       value: '8',
       icon: <FaClock className="w-4 h-4" />,
-      color: 'from-pink-500/20 to-rose-500/20',
+      color: 'bg-purple-500/10',
+      textColor: 'text-purple-400',
       link: '/messages'
     }
   ];
@@ -109,24 +113,27 @@ const Dashboard = () => {
       description: 'Write a new time-capsule message for your loved ones',
       icon: <FaEnvelope className="w-6 h-6" />,
       link: '/create-message',
-      color: 'from-blue-500/20 to-purple-500/20',
-      image: 'https://images.unsplash.com/photo-1596526131083-e8c633c948d2?auto=format&fit=crop&w=800&q=80'
+      color: 'bg-blue-500/10',
+      textColor: 'text-blue-400',
+      borderColor: 'border-blue-500/20'
     },
     {
       title: 'Digital Vault',
       description: 'Secure your important files and documents',
       icon: <FaLock className="w-6 h-6" />,
       link: '/vault',
-      color: 'from-green-500/20 to-emerald-500/20',
-      image: 'https://images.unsplash.com/photo-1562813733-b31f71025d54?auto=format&fit=crop&w=800&q=80'
+      color: 'bg-emerald-500/10',
+      textColor: 'text-emerald-400',
+      borderColor: 'border-emerald-500/20'
     },
     {
       title: 'Trusted Contacts',
       description: 'Manage your network of trusted individuals',
       icon: <FaUserFriends className="w-6 h-6" />,
       link: '/trusted-contacts',
-      color: 'from-yellow-500/20 to-orange-500/20',
-      image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80'
+      color: 'bg-amber-500/10',
+      textColor: 'text-amber-400',
+      borderColor: 'border-amber-500/20'
     }
   ];
 
@@ -136,21 +143,24 @@ const Dashboard = () => {
       description: 'You created a new time-capsule message',
       icon: <FaEnvelope className="w-4 h-4" />,
       time: '2h ago',
-      color: 'from-blue-500/20 to-purple-500/20'
+      color: 'bg-blue-500/10',
+      textColor: 'text-blue-400'
     },
     {
       title: 'Security Check Completed',
       description: 'Your account security was verified',
       icon: <FaShieldAlt className="w-4 h-4" />,
       time: '1d ago',
-      color: 'from-green-500/20 to-emerald-500/20'
+      color: 'bg-emerald-500/10',
+      textColor: 'text-emerald-400'
     },
     {
       title: 'Reminder Set',
       description: 'Message delivery scheduled for next week',
       icon: <FaBell className="w-4 h-4" />,
       time: '2d ago',
-      color: 'from-yellow-500/20 to-orange-500/20'
+      color: 'bg-amber-500/10',
+      textColor: 'text-amber-400'
     }
   ];
 
@@ -169,50 +179,39 @@ const Dashboard = () => {
             onClick={() => navigate(stat.link)}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 * index }}
-            className="card card-hover text-left w-full"
+            transition={{ duration: 0.4, delay: 0.1 * index }}
+            className="bg-gray-900/50 backdrop-blur-sm border border-white/5 p-6 rounded-lg hover:border-white/10 transition-all duration-200"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className={`icon-container bg-gradient-to-br ${stat.color}`}>
+              <div className={`p-3 rounded-lg ${stat.color} ${stat.textColor}`}>
                 {stat.icon}
               </div>
               <span className="text-2xl font-bold">{stat.value}</span>
             </div>
-            <p className="text-gray-400">{stat.label}</p>
+            <p className="text-gray-400 text-sm">{stat.label}</p>
           </motion.button>
         ))}
       </div>
 
       {/* Quick Actions */}
       <section className="mb-12">
-        <h2 className="section-title">Quick Actions</h2>
-        <div className="grid-cards">
+        <h2 className="text-xl font-semibold mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, index) => (
             <motion.button
               key={action.title}
               onClick={() => navigate(action.link)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
-              className="card card-hover text-left w-full overflow-hidden"
+              transition={{ duration: 0.4, delay: 0.1 * index }}
+              className={`bg-gray-900/50 backdrop-blur-sm border ${action.borderColor} p-6 rounded-lg text-left hover:border-white/10 transition-all duration-200`}
             >
-              <div className="relative h-40 -mx-6 -mt-6 mb-6 overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-90`} />
-                <img
-                  src={action.image}
-                  alt={action.title}
-                  className="w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-4 left-4 flex items-center gap-3">
-                  <div className="icon-container-lg bg-white/10 backdrop-blur-sm">
-                    {action.icon}
-                  </div>
-                  <h3 className="text-xl font-semibold">{action.title}</h3>
-                </div>
+              <div className={`p-4 rounded-lg ${action.color} ${action.textColor} mb-4 inline-block`}>
+                {action.icon}
               </div>
-              <p className="text-gray-400">{action.description}</p>
-              <div className="mt-4 flex items-center text-sm text-gray-400 hover:text-white transition-colors duration-200">
+              <h3 className="text-lg font-semibold mb-2">{action.title}</h3>
+              <p className="text-gray-400 text-sm mb-4">{action.description}</p>
+              <div className={`flex items-center text-sm ${action.textColor} opacity-75 hover:opacity-100 transition-opacity duration-200`}>
                 <span>Get Started</span>
                 <FaArrowRight className="ml-2 w-4 h-4" />
               </div>
@@ -223,24 +222,24 @@ const Dashboard = () => {
 
       {/* Recent Activity */}
       <section>
-        <h2 className="section-title">Recent Activity</h2>
+        <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
         <div className="space-y-4">
           {recentActivity.map((activity, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
-              className="card flex items-center gap-4 hover:scale-[1.02] transition-transform duration-200"
+              transition={{ duration: 0.4, delay: 0.1 * index }}
+              className="bg-gray-900/50 backdrop-blur-sm border border-white/5 p-4 rounded-lg flex items-center gap-4 hover:border-white/10 transition-all duration-200"
             >
-              <div className={`icon-container bg-gradient-to-br ${activity.color}`}>
+              <div className={`p-3 rounded-lg ${activity.color} ${activity.textColor}`}>
                 {activity.icon}
               </div>
               <div className="flex-1">
                 <h3 className="font-medium">{activity.title}</h3>
                 <p className="text-sm text-gray-400">{activity.description}</p>
               </div>
-              <span className="text-sm text-gray-400 bg-white/5 px-3 py-1 rounded-full">
+              <span className="text-sm text-gray-500 bg-white/5 px-3 py-1 rounded-full">
                 {activity.time}
               </span>
             </motion.div>

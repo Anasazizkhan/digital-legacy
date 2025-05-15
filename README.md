@@ -1,94 +1,233 @@
-# Digital Legacy System
+# Digital Legacy
 
-A modern web application for creating and managing time-locked digital messages and memories. Built with React, Tailwind CSS, and modern web technologies.
+A modern web application for securing and managing your digital legacy, built with React and Firebase.
+
+## Current Features & Use Cases
+
+### 1. Message Time Capsule
+Currently Supports:
+- Basic scheduled messages for future delivery
+- Text-based message composition
+- Simple delivery date scheduling
+- Message status tracking
+
+Planned Enhancements:
+- Template-based message creation for specific occasions:
+  - Life Milestones (Graduation, First Job, Birthdays)
+  - Personal Growth (Mental Health Check-ins, Goal Reviews)
+  - Special Events (Pre/Post Travel, New Year Reflections)
+- Rich media support (photos, videos, audio messages)
+- Multiple delivery triggers:
+  - Date-based (specific dates, anniversaries)
+  - Event-based (graduations, weddings)
+  - Conditional (age milestones, life events)
+- Message categories:
+  - Personal Growth ("Open When Feeling Down")
+  - Life Moments (Birthday Letters, Anniversary Notes)
+  - Family Legacy (Letters to Future Children/Grandchildren)
+  - Self-Improvement (Goal Check-ins, Fitness Journey)
+
+### 2. Vault Features (Secure Storage)
+Currently Supports:
+- Basic file storage
+- Simple access control
+
+Planned Enhancements:
+- Organized storage categories:
+  - Life Events Archive (Graduation, Wedding photos)
+  - Family Memories
+  - Personal Growth Journal
+  - Travel Memories
+- Multi-media support:
+  - Photos and Videos
+  - Audio recordings
+  - Scanned documents
+  - Digital memorabilia
+
+### 3. Message Creation & Delivery
+Currently Supports:
+- Basic text messages
+- Single recipient delivery
+
+Planned Enhancements:
+- Advanced Message Types:
+  - Personal Reflections
+  - Goal Check-ins
+  - Motivational Messages
+  - Legacy Letters
+- Group Messages:
+  - Family Time Capsules
+  - Class Reunions
+  - Team/Community Messages
+- Smart Delivery Options:
+  - Sequential message series
+  - Conditional delivery
+  - Interactive responses
+
+### 4. User Experience
+Currently Supports:
+- Basic dashboard
+- Simple message creation
+
+Planned Enhancements:
+- Guided Message Creation:
+  - Templates for different occasions
+  - Emotion-based prompts
+  - Life event suggestions
+- Interactive Timeline:
+  - Visual message scheduling
+  - Life event mapping
+  - Memory collection organization
+- Community Features:
+  - Shared time capsules
+  - Group messages
+  - Collaborative memories
+
+## Implementation Roadmap
+
+### Phase 1: Enhanced Message System
+- Add message templates
+- Implement rich media support
+- Create guided message creation flow
+
+### Phase 2: Advanced Delivery Options
+- Event-based triggers
+- Conditional delivery
+- Group message support
+
+### Phase 3: Community Features
+- Shared time capsules
+- Collaborative memories
+- Group interactions
+
+### Phase 4: Smart Features
+- AI-powered writing suggestions
+- Smart categorization
+- Automated memory collection
+
+## Technical Requirements
+
+Current technical features remain unchanged. Additional requirements:
+- Enhanced media processing
+- Advanced scheduling system
+- Collaborative features backend
+- Rich text editor integration
+- Media compression and storage
+- Smart delivery system
 
 ## Features
 
-- **Time-Locked Messages**
-  - Create text, video, audio, or image messages
-  - Set specific dates or milestones for unlocking
-  - Support for various unlock conditions (e.g., "when I turn 30", "on graduation")
+### 1. Authentication & Security
+- Secure email/password authentication
+- Google OAuth integration
+- Two-factor authentication support
+- Session management and security monitoring
+- Password change functionality
+- Last login tracking
+- Active devices monitoring
 
-- **Recipient Management**
-  - Send messages to yourself or trusted contacts
-  - Invitation-based system for adding recipients
-  - Identity verification through email + code on unlock date
+### 2. User Dashboard
+- Comprehensive overview of digital assets
+- Quick access to key features
+- Recent activity tracking
+- Status indicators for scheduled messages
+- Security status monitoring
+- Interactive statistics and metrics
 
-- **Secure Storage**
-  - End-to-end encryption using WebCrypto
-  - Secure vault for all media until unlock date
-  - Encryption key management and backup
+### 3. Notification System
+- Real-time notifications
+- Message delivery status updates
+- Security alert notifications
+- System update notifications
+- Customizable notification preferences
 
-- **Auto-Delivery System**
-  - Automatic message delivery when conditions are met
-  - Notifications via email, SMS, or in-app alerts
-  - Integration with life events and milestones
+### 4. Life Events Management
+- Timeline creation and management
+- Event scheduling and tracking
+- Google Calendar integration support
+- Custom event categories
+- Event reminder system
+
+### 5. Trusted Contacts
+- Designate trusted individuals
+- Contact management system
+- Permission and access control
+- Contact verification system
+- Automated notification system for contacts
+
+### 6. User Interface
+- Modern, responsive design
+- Dark theme optimization
+- Glass-morphism effects
+- Smooth animations and transitions
+- Mobile-friendly layout
+- Accessible navigation
+
+### 7. Security Features
+- End-to-end encryption
+- Secure data transmission
+- Regular security audits
+- Activity logging
+- IP tracking and suspicious activity detection
+
+### 8. Profile Management
+- User profile customization
+- Security preferences
+- Notification settings
+- Account recovery options
+- Data management tools
+
+## Technical Features
+
+### 1. Frontend
+- Built with React and Vite
+- Tailwind CSS for styling
+- Framer Motion for animations
+- Responsive design principles
+- Component-based architecture
+
+### 2. State Management
+- React Context API
+- Custom hooks for business logic
+- Efficient state updates
+- Persistent state management
+
+### 3. Performance
+- Optimized asset loading
+- Code splitting
+- Lazy loading of components
+- Efficient caching strategies
+- Fast page transitions
+
+### 4. Security
+- Firebase Authentication
+- Secure token management
+- Protected routes
+- Input validation
+- XSS protection
 
 ## Getting Started
 
-### Prerequisites
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up Firebase configuration
+4. Run the development server: `npm run dev`
 
-- Node.js (v14 or higher)
-- npm or yarn
+## Environment Setup
 
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/digital-legacy.git
-   cd digital-legacy
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open [http://localhost:5173](http://localhost:5173) in your browser
-
-## Tech Stack
-
-- **Frontend Framework**: React
-- **Styling**: Tailwind CSS
-- **Animations**: 
-  - Framer Motion
-  - AOS (Animate On Scroll)
-- **Icons**: React Icons
-- **Routing**: React Router DOM
-- **Build Tool**: Vite
-
-## Project Structure
-
+Create a `.env` file with the following variables:
 ```
-digital-legacy/
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/         # Page components
-│   ├── App.jsx        # Main application component
-│   └── index.css      # Global styles
-├── public/            # Static assets
-└── package.json       # Project dependencies
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
-
-## Security Features
-
-- End-to-end encryption for all stored content
-- Secure key management
-- Identity verification system
-- Session management and device control
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 

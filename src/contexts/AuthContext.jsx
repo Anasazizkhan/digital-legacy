@@ -1,42 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
-  signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup
+  updateProfile
 } from 'firebase/auth';
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDOhtTiGyjvl2QFsBc9A5a24qnY5x-QhgU",
-  authDomain: "digital-legacy-1d205.firebaseapp.com",
-  projectId: "digital-legacy-1d205",
-  storageBucket: "digital-legacy-1d205.appspot.com", // Fixed storage bucket URL
-  messagingSenderId: "418295955130",
-  appId: "1:418295955130:web:b511726de4188efb35cc83",
-  measurementId: "G-8LDGRFLMRZ"
-};
-
-// Initialize Firebase only once
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (error) {
-  if (!/already exists/.test(error.message)) {
-    console.error('Firebase initialization error', error.stack);
-  }
-}
-
-// Get Auth instance
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { app } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -47,63 +21,110 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  
+  // Initialize Firebase services
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  async function signup(email, password) {
+  async function register(email, password) {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      return result;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Create user document in Firestore
+      const userRef = doc(db, 'users', userCredential.user.uid);
+      await setDoc(userRef, {
+        email: userCredential.user.email,
+        createdAt: new Date().toISOString()
+      });
+      
+      return userCredential;
     } catch (error) {
-      setError(error.message);
+      console.error('Registration error:', error);
       throw error;
     }
   }
 
   async function login(email, password) {
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      return result;
-    } catch (error) {
-      setError(error.message);
-      throw error;
-    }
+    return signInWithEmailAndPassword(auth, email, password);
   }
 
   async function loginWithGoogle() {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    
+    // Create or update user document in Firestore
+    const userRef = doc(db, 'users', result.user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        name: result.user.displayName,
+        email: result.user.email,
+        phone: result.user.phoneNumber || '',
+        photoURL: result.user.photoURL,
+        createdAt: new Date().toISOString()
+      });
     }
+
+    return result;
   }
 
   async function logout() {
+    return signOut(auth);
+  }
+
+  async function updateUserProfile(user, data) {
     try {
-      await signOut(auth);
+      // Update Firebase Auth profile
+      await updateProfile(user, {
+        displayName: data.displayName
+      });
+
+      // Update Firestore document
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        name: data.displayName,
+        email: user.email,
+        phone: data.phoneNumber || '',
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
     } catch (error) {
-      setError(error.message);
+      console.error('Error updating profile:', error);
       throw error;
     }
   }
 
+  async function getUserData(uid) {
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      return userSnap.data();
+    }
+    return null;
+  }
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userData = await getUserData(user.uid);
+        setCurrentUser({ ...user, ...userData });
+      } else {
+        setCurrentUser(null);
+      }
       setLoading(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [auth]);
 
   const value = {
     currentUser,
-    error,
-    signup,
+    register,
     login,
     loginWithGoogle,
-    logout
+    logout,
+    updateUserProfile,
+    getUserData
   };
 
   return (
@@ -111,4 +132,6 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   );
-} 
+}
+
+export default AuthContext; 

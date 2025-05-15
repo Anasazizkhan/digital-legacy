@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaUserShield, FaPlus, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { FaUserShield, FaPlus, FaEnvelope, FaPhone, FaEllipsisH } from 'react-icons/fa';
+import PageLayout from '../components/PageLayout';
 
 const TrustedContacts = () => {
   const [contacts, setContacts] = useState([
@@ -23,78 +24,82 @@ const TrustedContacts = () => {
   ]);
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-16">
+    <PageLayout
+      title="Trusted Contacts"
+      description="Manage contacts who can access your messages posthumously"
+      icon={FaUserShield}
+      backgroundImage="https://images.unsplash.com/photo-1517167685284-96a27681ad75?auto=format&fit=crop&w=1920&q=80"
+    >
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold mb-4">Trusted Contacts</h1>
-          <p className="text-gray-400">
-            Manage contacts who can access your messages posthumously
-          </p>
-        </motion.div>
-
         <div className="grid gap-6">
+          {/* Add Contact Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-black/50 p-6 rounded-lg border border-white/10"
+            transition={{ duration: 0.4 }}
+            className="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg hover:border-white/20 transition-all duration-200"
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
-                <FaUserShield className="w-6 h-6 text-gray-400" />
-                <h2 className="text-xl font-semibold">Add Trusted Contact</h2>
+                <div className="p-3 rounded-lg bg-white/5 text-white">
+                  <FaUserShield className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-1">Add Trusted Contact</h2>
+                  <p className="text-sm text-gray-400">
+                    Trusted contacts will be notified when conditions for message delivery are met
+                  </p>
+                </div>
               </div>
-              <button className="btn-primary flex items-center space-x-2">
+              <button className="px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 transition-colors duration-200 flex items-center space-x-2">
                 <FaPlus className="w-4 h-4" />
                 <span>Add Contact</span>
               </button>
             </div>
-            <p className="text-gray-400 mb-4">
-              Trusted contacts will be notified when conditions for message delivery are met
-            </p>
           </motion.div>
 
+          {/* Contact Cards */}
           {contacts.map((contact, index) => (
             <motion.div
               key={contact.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.1 }}
-              className="bg-black/50 p-6 rounded-lg border border-white/10"
+              transition={{ duration: 0.4, delay: 0.1 * (index + 1) }}
+              className="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg hover:border-white/20 transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{contact.name}</h3>
-                  <div className="flex items-center space-x-4 mt-2">
-                    <div className="flex items-center space-x-2 text-gray-400">
-                      <FaEnvelope className="w-4 h-4" />
-                      <span className="text-sm">{contact.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-gray-400">
-                      <FaPhone className="w-4 h-4" />
-                      <span className="text-sm">{contact.phone}</span>
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-lg bg-white/5 text-white">
+                    <FaUserShield className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">{contact.name}</h3>
+                    <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
+                      <div className="flex items-center space-x-2 text-gray-400">
+                        <FaEnvelope className="w-4 h-4" />
+                        <span className="text-sm">{contact.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-gray-400">
+                        <FaPhone className="w-4 h-4" />
+                        <span className="text-sm">{contact.phone}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className={`px-3 py-1 rounded-full text-sm ${
-                    contact.status === 'verified' 
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-yellow-500/20 text-yellow-400'
-                  }`}>
+                <div className="flex items-center space-x-4">
+                  <span className="px-3 py-1 bg-white/5 rounded-full text-sm text-white">
                     {contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
                   </span>
+                  <button className="p-2 hover:bg-white/5 rounded-lg transition-colors duration-200">
+                    <FaEllipsisH className="w-5 h-5 text-gray-400" />
+                  </button>
                 </div>
               </div>
               <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-4">
                 <div className="text-sm text-gray-400">
                   {contact.messages} message{contact.messages !== 1 && 's'} assigned
                 </div>
-                <button className="text-sm text-gray-400 hover:text-white transition-colors">
+                <button className="px-4 py-2 bg-white/5 text-white text-sm rounded-lg hover:bg-white/10 transition-colors duration-200">
                   Manage Access
                 </button>
               </div>
@@ -102,7 +107,7 @@ const TrustedContacts = () => {
           ))}
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

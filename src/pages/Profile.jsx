@@ -1,24 +1,116 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaPhone, FaShieldAlt, FaBell } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Profile = () => {
+  const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
+    name: '',
+    email: '',
+    phone: '',
     notificationPreferences: {
       email: true,
       sms: false,
       inApp: true
     },
-    twoFactorEnabled: true
+    twoFactorEnabled: false
   });
 
-  const handleSave = (e) => {
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        if (currentUser) {
+          const userRef = doc(db, 'users', currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setProfile(prevProfile => ({
+              ...prevProfile,
+              name: userData.name || currentUser.displayName || '',
+              email: userData.email || currentUser.email || '',
+              phone: userData.phone || '',
+              notificationPreferences: userData.notificationPreferences || prevProfile.notificationPreferences,
+              twoFactorEnabled: userData.twoFactorEnabled || false
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [currentUser]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    // Handle profile update logic here
+    try {
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          name: profile.name,
+          phone: profile.phone,
+          notificationPreferences: profile.notificationPreferences,
+          twoFactorEnabled: profile.twoFactorEnabled,
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      if (name.startsWith('notifications.')) {
+        const notificationType = name.split('.')[1];
+        setProfile(prev => ({
+          ...prev,
+          notificationPreferences: {
+            ...prev.notificationPreferences,
+            [notificationType]: checked
+          }
+        }));
+      } else if (name === 'twoFactorEnabled') {
+        setProfile(prev => ({
+          ...prev,
+          twoFactorEnabled: checked
+        }));
+      }
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-white/10 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-white/10 rounded w-2/4 mb-8"></div>
+            <div className="space-y-6">
+              <div className="h-40 bg-white/5 rounded-lg"></div>
+              <div className="h-40 bg-white/5 rounded-lg"></div>
+              <div className="h-40 bg-white/5 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 mt-16">
@@ -56,7 +148,9 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue={profile.name}
+                    name="name"
+                    value={profile.name}
+                    onChange={handleInputChange}
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-white/30"
                   />
                 </div>
@@ -68,8 +162,10 @@ const Profile = () => {
                   <div className="flex items-center space-x-4">
                     <input
                       type="email"
-                      defaultValue={profile.email}
-                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-white/30"
+                      name="email"
+                      value={profile.email}
+                      disabled
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white/50 cursor-not-allowed"
                     />
                     <span className="px-3 py-1 rounded-full text-sm bg-green-500/20 text-green-400">
                       Verified
@@ -83,7 +179,9 @@ const Profile = () => {
                   </label>
                   <input
                     type="tel"
-                    defaultValue={profile.phone}
+                    name="phone"
+                    value={profile.phone}
+                    onChange={handleInputChange}
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-white/30"
                   />
                 </div>
@@ -101,7 +199,9 @@ const Profile = () => {
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    defaultChecked={profile.notificationPreferences.email}
+                    name="notifications.email"
+                    checked={profile.notificationPreferences.email}
+                    onChange={handleInputChange}
                     className="form-checkbox"
                   />
                   <span>Email Notifications</span>
@@ -110,7 +210,9 @@ const Profile = () => {
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    defaultChecked={profile.notificationPreferences.sms}
+                    name="notifications.sms"
+                    checked={profile.notificationPreferences.sms}
+                    onChange={handleInputChange}
                     className="form-checkbox"
                   />
                   <span>SMS Notifications</span>
@@ -119,7 +221,9 @@ const Profile = () => {
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    defaultChecked={profile.notificationPreferences.inApp}
+                    name="notifications.inApp"
+                    checked={profile.notificationPreferences.inApp}
+                    onChange={handleInputChange}
                     className="form-checkbox"
                   />
                   <span>In-App Notifications</span>
@@ -138,7 +242,9 @@ const Profile = () => {
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    defaultChecked={profile.twoFactorEnabled}
+                    name="twoFactorEnabled"
+                    checked={profile.twoFactorEnabled}
+                    onChange={handleInputChange}
                     className="form-checkbox"
                   />
                   <span>Enable Two-Factor Authentication</span>
@@ -155,7 +261,7 @@ const Profile = () => {
               </button>
               <button
                 type="submit"
-                className="btn-primary"
+                className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Save Changes
               </button>

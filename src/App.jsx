@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateMessage from './pages/CreateMessage';
 import Messages from './pages/Messages';
@@ -29,6 +30,16 @@ const ProtectedRoute = ({ children }) => {
   
   return children;
 };
+
+function App() {
+  return (
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
+  );
+}
 
 function AppContent() {
   useEffect(() => {
@@ -57,6 +68,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={
@@ -117,16 +129,6 @@ function AppContent() {
         </Routes>
       </main>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </Router>
   );
 }
 

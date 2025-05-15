@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaGoogle, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
+import { FaGoogle, FaEnvelope, FaLock, FaUser, FaPhone, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
-const Login = () => {
+const Register = () => {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    phone: '',
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { register, loginWithGoogle, updateUserProfile } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,22 +25,42 @@ const Login = () => {
     }));
   };
 
+  const validateForm = () => {
+    if (!formData.name.trim()) return 'Name is required';
+    if (!formData.email.trim()) return 'Email is required';
+    if (!formData.phone.trim()) return 'Phone number is required';
+    if (!formData.password) return 'Password is required';
+    if (formData.password.length < 6) return 'Password must be at least 6 characters';
+    if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.email.trim() || !formData.password) {
-      setError('Please fill in all fields');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     try {
       setError('');
       setLoading(true);
-      await login(formData.email, formData.password);
+      
+      // Create user with email and password
+      const userCredential = await register(formData.email, formData.password);
+      
+      // Update user profile with additional information
+      await updateUserProfile(userCredential.user, {
+        displayName: formData.name,
+        phoneNumber: formData.phone
+      });
+
       navigate('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
-      setError(formatError(error.message));
+      console.error('Registration error:', error);
+      setError(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -57,19 +80,6 @@ const Login = () => {
     }
   };
 
-  const formatError = (errorMessage) => {
-    if (errorMessage.includes('auth/wrong-password')) {
-      return 'Incorrect password. Please try again.';
-    } else if (errorMessage.includes('auth/user-not-found')) {
-      return 'No account found with this email.';
-    } else if (errorMessage.includes('auth/invalid-email')) {
-      return 'Please enter a valid email address.';
-    } else if (errorMessage.includes('auth/too-many-requests')) {
-      return 'Too many failed attempts. Please try again later.';
-    }
-    return 'Failed to sign in. Please check your credentials.';
-  };
-
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -78,7 +88,7 @@ const Login = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-lg"
         >
-          <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
           
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center space-x-2 text-red-400">
@@ -88,6 +98,21 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-2">Name</label>
+              <div className="relative">
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-10 py-2 focus:outline-none focus:border-white/20 transition-colors"
+                  placeholder="Enter your name"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm text-gray-400 mb-2">Email</label>
               <div className="relative">
@@ -104,6 +129,21 @@ const Login = () => {
             </div>
 
             <div>
+              <label className="block text-sm text-gray-400 mb-2">Phone</label>
+              <div className="relative">
+                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-10 py-2 focus:outline-none focus:border-white/20 transition-colors"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm text-gray-400 mb-2">Password</label>
               <div className="relative">
                 <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -113,19 +153,24 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-10 py-2 focus:outline-none focus:border-white/20 transition-colors"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" className="form-checkbox" />
-                <span className="text-sm text-gray-400">Remember me</span>
-              </label>
-              <Link to="/forgot-password" className="text-sm text-white hover:underline">
-                Forgot Password?
-              </Link>
+            <div>
+              <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-10 py-2 focus:outline-none focus:border-white/20 transition-colors"
+                  placeholder="Confirm your password"
+                />
+              </div>
             </div>
 
             <button
@@ -133,7 +178,7 @@ const Login = () => {
               disabled={loading}
               className="w-full bg-white text-black py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
@@ -158,9 +203,9 @@ const Login = () => {
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-white hover:underline">
-              Create account
+            Already have an account?{' '}
+            <Link to="/login" className="text-white hover:underline">
+              Sign in
             </Link>
           </p>
         </motion.div>
@@ -169,4 +214,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Register; 
