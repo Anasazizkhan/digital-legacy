@@ -1,0 +1,147 @@
+.calendar-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-header h2 {
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.connect-calendar-btn,
+.sync-calendar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.connect-calendar-btn {
+  background-color: #8B5CF6;
+  border: 1px solid #8B5CF6;
+  color: #fff;
+}
+
+.connect-calendar-btn:hover {
+  background-color: #7c3aed;
+}
+
+.sync-calendar-btn {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+}
+
+.sync-calendar-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.connect-calendar-btn:disabled,
+.sync-calendar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.calendar-content {
+  min-height: 200px;
+}
+
+.no-events {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.no-events .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #8B5CF6;
+}
+
+.connect-prompt {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-card {
+  display: flex;
+  gap: 1rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s;
+}
+
+.event-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.event-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 0.5rem;
+  background-color: rgba(139, 92, 246, 0.1);
+  border-radius: 6px;
+}
+
+.event-date .day {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #8B5CF6;
+}
+
+.event-date .month {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-details h3 {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.event-details p {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+.event-time {
+  font-size: 0.75rem;
+  color: #8B5CF6;
+} 

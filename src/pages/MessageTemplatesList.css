@@ -1,0 +1,77 @@
+.templates-list-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #000;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.templates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.templates-header h1 {
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+.custom-link {
+  color: #8B5CF6;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border: 1px solid #8B5CF6;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.custom-link:hover {
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.template-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  text-decoration: none;
+  color: #fff;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.template-card:hover {
+  background-color: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+  transform: translateY(-5px);
+}
+
+.template-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.template-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.template-card p {
+  color: #9ca3af;
+  line-height: 1.5;
+} 
