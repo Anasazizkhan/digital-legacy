@@ -2,6 +2,9 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
+// Backend API URL from environment variable
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
+
 // TODO: Replace with your Firebase project configuration
 // Get these values from your Firebase Console:
 // 1. Go to console.firebase.google.com
@@ -42,4 +45,4 @@ enableIndexedDbPersistence(db).catch((err) => {
     }
 });
 
-export { app, auth, db }; 
+export { app, auth, db, BACKEND_API_URL }; 

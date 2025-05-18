@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { app } from '../firebase';
+import { saveUserToDatabase } from '../services/userService';
 
 const AuthContext = createContext();
 
@@ -45,31 +46,27 @@ export function AuthProvider({ children }) {
   }
 
   async function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
-  }
-
-  async function loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    
-    // Create or update user document in Firestore
-    const userRef = doc(db, 'users', result.user.uid);
-    const userSnap = await getDoc(userRef);
-    
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        name: result.user.displayName,
-        email: result.user.email,
-        phone: result.user.phoneNumber || '',
-        photoURL: result.user.photoURL,
-        createdAt: new Date().toISOString()
-      });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    return result;
   }
 
-  async function logout() {
+  async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      throw error;
+    }
+  }
+
+  function logout() {
     return signOut(auth);
   }
 
@@ -121,7 +118,7 @@ export function AuthProvider({ children }) {
     currentUser,
     register,
     login,
-    loginWithGoogle,
+    signInWithGoogle,
     logout,
     updateUserProfile,
     getUserData

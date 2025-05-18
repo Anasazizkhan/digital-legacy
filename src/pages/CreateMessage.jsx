@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createMessage } from '../services/messageService';
 import { sendMessageToCohere } from '../services/claudeService';
 import { FaPaperPlane, FaRobot, FaUser, FaCalendar, FaClock, FaEnvelope } from 'react-icons/fa';
+import api from '../services/api';
 import './CreateMessage.css';
 
 const CreateMessage = () => {
@@ -108,18 +109,25 @@ const CreateMessage = () => {
         return;
       }
 
-      const messageData = {
+     const messageData = {
         title: messageDetails.title,
         content: messageDetails.content,
         scheduledFor: scheduledDateTime.toISOString(),
         recipientEmail: messageDetails.emailOption === 'own' ? currentUser.email : messageDetails.recipientEmail,
-        userId: currentUser.uid
+        userId: currentUser.uid,
+        createdAt: new Date().toISOString(),
+        status: 'scheduled'
       };
 
-      await createMessage(messageData);
+      // Make API call to backend using Axios
+      await api.post('/messages', messageData);
+
+      // Also save to Firebase for real-time updates
+       await createMessage(messageData);
+      
       navigate('/messages');
     } catch (err) {
-      setError(err.message || 'Failed to create message');
+      setError(err.response?.data?.message || err.message || 'Failed to create message');
     } finally {
       setLoading(false);
     }

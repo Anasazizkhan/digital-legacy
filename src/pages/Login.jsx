@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaGoogle, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, signInWithGoogle } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +38,15 @@ const Login = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      setError(formatError(error.message));
+      if (error.code === 'auth/invalid-credential') {
+        setError('Invalid email or password');
+      } else if (error.code === 'auth/user-not-found') {
+        setError('No account found with this email');
+      } else if (error.code === 'auth/wrong-password') {
+        setError('Incorrect password');
+      } else {
+        setError('Failed to sign in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -47,7 +56,15 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
-      await loginWithGoogle();
+      
+      // First, authenticate with Firebase
+      const user = await signInWithGoogle();
+      
+      // Send the Firebase ID token to backend
+      const response = await api.post('/auth/google', { 
+        idToken: await user.getIdToken() 
+      });
+      
       navigate('/dashboard');
     } catch (error) {
       console.error('Google sign in error:', error);
