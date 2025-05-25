@@ -20,17 +20,20 @@
 }
 
 .custom-link {
-  color: #8B5CF6;
+  color: #fff;
   text-decoration: none;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border: 1px solid #8B5CF6;
-  border-radius: 6px;
-  transition: all 0.2s;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .custom-link:hover {
-  background-color: rgba(139, 92, 246, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .templates-grid {
@@ -41,7 +44,7 @@
 }
 
 .template-card {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 2rem;
@@ -52,26 +55,94 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.template-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--template-bg);
+  background-size: 200px 200px;
+  background-position: center;
+  background-repeat: repeat;
+  opacity: 0.15;
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+/* Template-specific background images */
+.template-card[href*="love"]::before {
+  background-image: url('/images/templates/love-bg.jpg');
+}
+
+.template-card[href*="wisdom"]::before {
+  background-image: url('/images/templates/wisdom-bg.jpg');
+}
+
+.template-card[href*="memories"]::before {
+  background-image: url('/images/templates/memories-bg.jpg');
+}
+
+.template-card[href*="gratitude"]::before {
+  background-image: url('/images/templates/gratitude-bg.jpg');
+}
+
+.template-card[href*="advice"]::before {
+  background-image: url('/images/templates/advice-bg.jpg');
+}
+
+.template-card[href*="farewell"]::before {
+  background-image: url('/images/templates/farewell-bg.jpg');
 }
 
 .template-card:hover {
-  background-color: rgba(139, 92, 246, 0.1);
-  border-color: #8B5CF6;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-5px);
+}
+
+.template-card:hover::before {
+  opacity: 0.25;
+  transform: scale(1.1);
 }
 
 .template-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .template-card h3 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
   color: #fff;
+  position: relative;
+  z-index: 1;
 }
 
 .template-card p {
-  color: #9ca3af;
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .templates-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .templates-header h1 {
+    font-size: 2rem;
+  }
 } 

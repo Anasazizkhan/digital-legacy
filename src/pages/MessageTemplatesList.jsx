@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { templateBackgrounds } from '../utils/templateBackgrounds';
 import './MessageTemplatesList.css';
 
 const MessageTemplatesList = () => {
@@ -45,9 +46,9 @@ const MessageTemplatesList = () => {
   return (
     <div className="templates-list-page">
       <div className="templates-header">
-        <h1>Choose a Template</h1>
+        <h1>✨ Choose a Template</h1>
         <Link to="/create-message" className="custom-link">
-          Write Custom Message Instead
+          ✍️ Write Custom Message
         </Link>
       </div>
       
@@ -57,6 +58,9 @@ const MessageTemplatesList = () => {
             key={template.id}
             to={`/create-message?template=${template.id}`}
             className="template-card"
+            style={{
+              '--template-bg': templateBackgrounds[template.id]
+            }}
           >
             <div className="template-icon">{template.icon}</div>
             <h3>{template.title}</h3>

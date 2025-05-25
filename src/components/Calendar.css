@@ -3,7 +3,9 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 2rem;
+  margin: 2rem;
+  max-width: 800px;
+  margin: 2rem auto;
 }
 
 .calendar-header {
@@ -14,8 +16,9 @@
 }
 
 .calendar-header h2 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   color: #fff;
+  margin: 0;
 }
 
 .connect-calendar-btn,
@@ -28,25 +31,26 @@
   font-weight: 500;
   transition: all 0.2s;
   cursor: pointer;
+  border: none;
+  outline: none;
 }
 
 .connect-calendar-btn {
   background-color: #8B5CF6;
-  border: 1px solid #8B5CF6;
   color: #fff;
 }
 
-.connect-calendar-btn:hover {
-  background-color: #7c3aed;
+.connect-calendar-btn:hover:not(:disabled) {
+  background-color: #7C3AED;
 }
 
 .sync-calendar-btn {
   background-color: transparent;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  color: #9CA3AF;
 }
 
-.sync-calendar-btn:hover {
+.sync-calendar-btn:hover:not(:disabled) {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.2);
 }
@@ -55,6 +59,29 @@
 .sync-calendar-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.icon {
+  font-size: 1.2em;
+}
+
+.icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
 
 .calendar-content {
@@ -67,7 +94,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: #9ca3af;
+  color: #9CA3AF;
   text-align: center;
 }
 
@@ -122,7 +149,7 @@
 
 .event-date .month {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: #9CA3AF;
 }
 
 .event-details {
@@ -132,16 +159,17 @@
 .event-details h3 {
   font-size: 1rem;
   color: #fff;
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .event-details p {
   font-size: 0.875rem;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
+  color: #9CA3AF;
+  margin: 0 0 0.5rem 0;
 }
 
 .event-time {
   font-size: 0.75rem;
   color: #8B5CF6;
+  display: block;
 } 

@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaUser, FaEnvelope, FaPhone, FaShieldAlt, FaBell } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaPhone, FaShieldAlt, FaBell, FaExclamationCircle, FaSignOutAlt, FaCheckCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Profile = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -23,24 +28,49 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        if (currentUser) {
-          const userRef = doc(db, 'users', currentUser.uid);
-          const userSnap = await getDoc(userRef);
+        if (!currentUser) {
+          setError('No authenticated user found');
+          setLoading(false);
+          return;
+        }
+
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          setProfile(prevProfile => ({
+            ...prevProfile,
+            name: userData.name || currentUser.displayName || '',
+            email: userData.email || currentUser.email || '',
+            phone: userData.phone || '',
+            notificationPreferences: userData.notificationPreferences || prevProfile.notificationPreferences,
+            twoFactorEnabled: userData.twoFactorEnabled || false
+          }));
+        } else {
+          const newUserData = {
+            name: currentUser.displayName || '',
+            email: currentUser.email || '',
+            phone: '',
+            notificationPreferences: {
+              email: true,
+              sms: false,
+              inApp: true
+            },
+            twoFactorEnabled: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
           
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            setProfile(prevProfile => ({
-              ...prevProfile,
-              name: userData.name || currentUser.displayName || '',
-              email: userData.email || currentUser.email || '',
-              phone: userData.phone || '',
-              notificationPreferences: userData.notificationPreferences || prevProfile.notificationPreferences,
-              twoFactorEnabled: userData.twoFactorEnabled || false
-            }));
-          }
+          await setDoc(userRef, newUserData);
+          setProfile(prevProfile => ({
+            ...prevProfile,
+            ...newUserData
+          }));
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
+        setError('Failed to load profile data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -51,6 +81,10 @@ const Profile = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    
     try {
       if (currentUser) {
         const userRef = doc(db, 'users', currentUser.uid);
@@ -61,9 +95,23 @@ const Profile = () => {
           twoFactorEnabled: profile.twoFactorEnabled,
           updatedAt: new Date().toISOString()
         });
+        setSuccess('Profile updated successfully!');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
+      setError('Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+      setError('Failed to log out. Please try again.');
     }
   };
 
@@ -115,6 +163,32 @@ const Profile = () => {
   return (
     <div className="container mx-auto px-4 py-8 mt-16">
       <div className="max-w-4xl mx-auto">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400"
+          >
+            <p className="flex items-center">
+              <FaExclamationCircle className="mr-2" />
+              {error}
+            </p>
+          </motion.div>
+        )}
+
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400"
+          >
+            <p className="flex items-center">
+              <FaCheckCircle className="mr-2" />
+              {success}
+            </p>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -202,7 +276,7 @@ const Profile = () => {
                     name="notifications.email"
                     checked={profile.notificationPreferences.email}
                     onChange={handleInputChange}
-                    className="form-checkbox"
+                    className="form-checkbox h-4 w-4 text-white bg-black/50 border-white/10 rounded focus:ring-white/30"
                   />
                   <span>Email Notifications</span>
                 </label>
@@ -213,7 +287,7 @@ const Profile = () => {
                     name="notifications.sms"
                     checked={profile.notificationPreferences.sms}
                     onChange={handleInputChange}
-                    className="form-checkbox"
+                    className="form-checkbox h-4 w-4 text-white bg-black/50 border-white/10 rounded focus:ring-white/30"
                   />
                   <span>SMS Notifications</span>
                 </label>
@@ -224,7 +298,7 @@ const Profile = () => {
                     name="notifications.inApp"
                     checked={profile.notificationPreferences.inApp}
                     onChange={handleInputChange}
-                    className="form-checkbox"
+                    className="form-checkbox h-4 w-4 text-white bg-black/50 border-white/10 rounded focus:ring-white/30"
                   />
                   <span>In-App Notifications</span>
                 </label>
@@ -245,26 +319,38 @@ const Profile = () => {
                     name="twoFactorEnabled"
                     checked={profile.twoFactorEnabled}
                     onChange={handleInputChange}
-                    className="form-checkbox"
+                    className="form-checkbox h-4 w-4 text-white bg-black/50 border-white/10 rounded focus:ring-white/30"
                   />
                   <span>Enable Two-Factor Authentication</span>
                 </label>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-between items-center">
               <button
                 type="button"
-                className="px-6 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-6 py-2 text-red-400 hover:text-red-300 transition-colors"
               >
-                Cancel
+                <FaSignOutAlt className="w-4 h-4" />
+                <span>Logout</span>
               </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                Save Changes
-              </button>
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  className="px-6 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           </motion.form>
         </div>

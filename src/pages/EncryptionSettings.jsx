@@ -82,26 +82,26 @@ const EncryptionSettings = () => {
       <div className="max-w-4xl mx-auto">
         <div className="grid gap-6">
           {securityOptions.map((option, index) => (
-            <motion.div
+          <motion.div
               key={option.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 * index }}
               className="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg hover:border-white/20 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-4 mb-4">
+          >
+            <div className="flex items-center space-x-4 mb-4">
                 <div className="p-3 rounded-lg bg-white/5 text-white">
                   {option.icon}
-                </div>
+            </div>
                 <div>
                   <h2 className="text-lg font-semibold mb-1">{option.title}</h2>
                   <p className="text-sm text-gray-400">{option.description}</p>
-                </div>
+            </div>
               </div>
               <div className="mt-6">
                 {option.content}
-              </div>
-            </motion.div>
+            </div>
+          </motion.div>
           ))}
         </div>
       </div>

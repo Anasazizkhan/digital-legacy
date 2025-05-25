@@ -3,9 +3,54 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createMessage } from '../services/messageService';
 import { sendMessageToCohere } from '../services/claudeService';
-import { FaPaperPlane, FaRobot, FaUser, FaCalendar, FaClock, FaEnvelope } from 'react-icons/fa';
+import { FaPaperPlane, FaRobot, FaUser } from 'react-icons/fa';
 import api from '../services/api';
 import './CreateMessage.css';
+
+const templateIcons = {
+  love: '❤️',
+  wisdom: '🎓',
+  memories: '📸',
+  gratitude: '🙏',
+  advice: '💡',
+  farewell: '👋'
+};
+
+const templateColors = {
+  love: '#ff0066',
+  wisdom: '#4b0082',
+  memories: '#008080',
+  gratitude: '#ffd700',
+  advice: '#00ff00',
+  farewell: '#808080'
+};
+
+const templatePlaceholders = {
+  love: {
+    title: 'Express your deepest feelings...',
+    content: 'Share your love and affection...'
+  },
+  wisdom: {
+    title: 'Share your life lessons...',
+    content: 'Pass on your valuable insights and wisdom...'
+  },
+  memories: {
+    title: 'Capture a special moment...',
+    content: 'Describe the memories you want to preserve...'
+  },
+  gratitude: {
+    title: 'Express your thankfulness...',
+    content: 'Share your appreciation and gratitude...'
+  },
+  advice: {
+    title: 'Offer guidance and support...',
+    content: 'Share your advice and life experiences...'
+  },
+  farewell: {
+    title: 'Say your heartfelt goodbye...',
+    content: 'Express your final thoughts and wishes...'
+  }
+};
 
 const CreateMessage = () => {
   const [messageDetails, setMessageDetails] = useState({
@@ -21,18 +66,19 @@ const CreateMessage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Check if template was selected
     const params = new URLSearchParams(location.search);
     const templateId = params.get('template');
     
     if (templateId) {
       const template = getTemplateContent(templateId);
       if (template) {
+        setSelectedTemplate(templateId);
         setMessageDetails(prev => ({
           ...prev,
           title: template.title,
@@ -44,101 +90,100 @@ const CreateMessage = () => {
 
   const getTemplateContent = (templateId) => {
     const templates = {
-      birthday: {
-        title: 'Birthday Wishes',
-        content: 'On this special day, I want to celebrate you and all the joy you bring to the world. May your birthday be filled with love, laughter, and wonderful memories...'
-      },
-      anniversary: {
-        title: 'Anniversary Celebration',
-        content: 'As we celebrate another year of our journey together, I want to express my deepest gratitude for all the beautiful moments we\'ve shared...'
-      },
-      wedding: {
-        title: 'Wedding Congratulations',
-        content: 'On this joyous occasion of your wedding, I want to share my heartfelt congratulations and best wishes for your new journey together...'
-      },
-      graduation: {
-        title: 'Graduation Celebration',
-        content: 'Congratulations on this remarkable achievement! Your graduation marks the beginning of an exciting new chapter in your life...'
-      },
       love: {
         title: 'Love Letter',
-        content: 'Dear [Recipient],\n\nI wanted to take a moment to express my deepest feelings for you...'
+        content: 'Dear [Recipient],\n\nI wanted to take a moment to express my deepest feelings for you...',
+        prompts: [
+          'What do you love most about this person?',
+          'What special memories do you share?',
+          'How has this person impacted your life?'
+        ]
       },
       wisdom: {
         title: 'Life Wisdom',
-        content: 'Here are some lessons I\'ve learned throughout my life that I hope will guide you...'
+        content: 'Here are some lessons I\'ve learned throughout my life that I hope will guide you...',
+        prompts: [
+          'What life experiences have taught you the most?',
+          'What advice would you give to someone younger?',
+          'What principles have guided you through life?'
+        ]
       },
       memories: {
         title: 'Special Memories',
-        content: 'Let me share with you some of my most cherished memories...'
+        content: 'Let me share with you some of my most cherished memories...',
+        prompts: [
+          'What are your most precious memories?',
+          'What moments have shaped who you are?',
+          'What stories do you want to preserve?'
+        ]
       },
       gratitude: {
         title: 'Gratitude Message',
-        content: 'I want to express my deepest gratitude for everything you\'ve done...'
+        content: 'I want to express my deepest gratitude for everything you\'ve done...',
+        prompts: [
+          'What are you most thankful for?',
+          'How has this person positively influenced your life?',
+          'What specific moments are you grateful for?'
+        ]
       },
       advice: {
         title: 'Life Advice',
-        content: 'Here\'s some advice I wish someone had given me when I was younger...'
+        content: 'Here\'s some advice I wish someone had given me when I was younger...',
+        prompts: [
+          'What important life lessons have you learned?',
+          'What mistakes taught you the most?',
+          'What guidance would you give to others?'
+        ]
       },
       farewell: {
         title: 'Farewell Message',
-        content: 'As I write this message, I want to say goodbye in a way that truly expresses...'
+        content: 'As I write this message, I want to say goodbye in a way that truly expresses...',
+        prompts: [
+          'What would you like to say before saying goodbye?',
+          'What memories would you like to share?',
+          'What wishes do you have for the future?'
+        ]
       }
     };
     return templates[templateId];
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setMessageDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
       const scheduledDateTime = new Date(`${messageDetails.scheduledDate}T${messageDetails.scheduledTime}`);
       
       if (scheduledDateTime <= new Date()) {
-        setError('Please select a future date and time');
-        return;
+        throw new Error('Scheduled time must be in the future');
       }
 
-     const messageData = {
+      const messageData = {
         title: messageDetails.title,
         content: messageDetails.content,
         scheduledFor: scheduledDateTime.toISOString(),
-        recipientEmail: messageDetails.emailOption === 'own' ? currentUser.email : messageDetails.recipientEmail,
-        userId: currentUser.uid,
-        createdAt: new Date().toISOString(),
+        recipientEmail: messageDetails.recipientEmail,
+        type: selectedTemplate || 'custom',
         status: 'scheduled'
       };
 
-      // Make API call to backend using Axios
-      await api.post('/messages', messageData);
-
-      // Also save to Firebase for real-time updates
-       await createMessage(messageData);
-      
+      await createMessage(messageData);
       navigate('/messages');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to create message');
+      setError(err.message || 'Failed to create message');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChatSubmit = async (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!userInput.trim()) return;
 
     const newMessage = {
-      text: userInput,
+      content: userInput,
       sender: 'user',
       timestamp: new Date().toISOString()
     };
@@ -148,115 +193,189 @@ const CreateMessage = () => {
     setChatLoading(true);
 
     try {
-      const response = await sendMessageToCohere(userInput);
-      const botMessage = {
-        text: response,
-        sender: 'bot',
+      const response = await sendMessageToCohere(userInput, selectedTemplate);
+      const assistantMessage = {
+        content: response,
+        sender: 'assistant',
         timestamp: new Date().toISOString()
       };
-      setChatMessages(prev => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Chat error:', error);
-      setError('Failed to get response from AI. Please try again.');
+      setChatMessages(prev => [...prev, assistantMessage]);
+    } catch (err) {
+      console.error('Error getting AI response:', err);
+      setError('Failed to get AI response. Please try again.');
     } finally {
       setChatLoading(false);
     }
   };
 
-  return (
-    <div className="create-message-container">
-      <div className="message-form-section">
-        <h1>Create New Message</h1>
-        {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="subject">Subject</label>
-            <input
-              type="text"
-              id="subject"
-              value={messageDetails.title}
-              onChange={(e) => setMessageDetails({ ...messageDetails, title: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="content">Message</label>
-            <textarea
-              id="content"
-              value={messageDetails.content}
-              onChange={(e) => setMessageDetails({ ...messageDetails, content: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="scheduledDate">Schedule Date</label>
-            <input
-              type="date"
-              id="scheduledDate"
-              value={messageDetails.scheduledDate}
-              onChange={(e) => setMessageDetails({ ...messageDetails, scheduledDate: e.target.value })}
-              required
-              min={new Date().toISOString().split('T')[0]}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="scheduledTime">Schedule Time</label>
-            <input
-              type="time"
-              id="scheduledTime"
-              value={messageDetails.scheduledTime}
-              onChange={(e) => setMessageDetails({ ...messageDetails, scheduledTime: e.target.value })}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="recipientEmail">Recipient Email</label>
-            <input
-              type="email"
-              id="recipientEmail"
-              value={messageDetails.recipientEmail}
-              onChange={(e) => setMessageDetails({ ...messageDetails, recipientEmail: e.target.value })}
-              required
-            />
-          </div>
-          <button type="submit" className="submit-button" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Message'}
-          </button>
-        </form>
-      </div>
+  const currentTemplate = selectedTemplate ? getTemplateContent(selectedTemplate) : null;
 
-      <div className="chat-section">
-        <div className="chat-header">
-          <span className="chat-icon">💬</span>
-          <h2>Message Assistant</h2>
+  return (
+    <div className="create-message-page">
+      <div 
+        className="message-form-container"
+        data-template={selectedTemplate}
+      >
+        <div className="template-header">
+          <span className="template-icon">
+            {selectedTemplate ? templateIcons[selectedTemplate] : '✉️'}
+          </span>
+          <h1>
+            {currentTemplate ? currentTemplate.title : 'Create New Message'}
+          </h1>
         </div>
-        <div className="chat-messages">
-          {chatMessages.map((message, index) => (
-            <div key={index} className={`chat-message ${message.sender}`}>
-              <div className="message-content">{message.text}</div>
-              <div className="message-timestamp">
-                {new Date(message.timestamp).toLocaleTimeString()}
+
+        <div className="content-grid">
+          <div className="message-form-section">
+            {currentTemplate && (
+              <div className="prompts-section">
+                <h2>
+                  <span>Writing Prompts</span>
+                  <span className="template-icon">💭</span>
+                </h2>
+                <div className="prompts-grid">
+                  {currentTemplate.prompts.map((prompt, index) => (
+                    <div key={index} className="prompt-card">
+                      {prompt}
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="title">
+                  <span>📝 Message Title</span>
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value={messageDetails.title}
+                  onChange={(e) => setMessageDetails({ ...messageDetails, title: e.target.value })}
+                  className="form-input"
+                  required
+                  placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].title : "Enter message title"}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="content">
+                  <span>✍️ Message Content</span>
+                </label>
+                <textarea
+                  id="content"
+                  value={messageDetails.content}
+                  onChange={(e) => setMessageDetails({ ...messageDetails, content: e.target.value })}
+                  className="form-textarea"
+                  required
+                  placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].content : "Write your message here..."}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="scheduledDate">
+                  <span>📅 Schedule Date</span>
+                </label>
+                <input
+                  type="date"
+                  id="scheduledDate"
+                  value={messageDetails.scheduledDate}
+                  onChange={(e) => setMessageDetails({ ...messageDetails, scheduledDate: e.target.value })}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="scheduledTime">
+                  <span>⏰ Schedule Time</span>
+                </label>
+                <input
+                  type="time"
+                  id="scheduledTime"
+                  value={messageDetails.scheduledTime}
+                  onChange={(e) => setMessageDetails({ ...messageDetails, scheduledTime: e.target.value })}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="recipientEmail">
+                  <span>📧 Recipient Email</span>
+                </label>
+                <input
+                  type="email"
+                  id="recipientEmail"
+                  value={messageDetails.recipientEmail}
+                  onChange={(e) => setMessageDetails({ ...messageDetails, recipientEmail: e.target.value })}
+                  className="form-input"
+                  required
+                  placeholder="Enter recipient's email"
+                />
+              </div>
+
+              {error && (
+                <div className="error-message">
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="submit-button"
+                disabled={loading}
+              >
+                {loading ? '⏳ Creating...' : `${selectedTemplate ? templateIcons[selectedTemplate] : '✉️'} Create Message`}
+              </button>
+            </form>
+          </div>
+
+          <div className="chat-section">
+            <div className="chat-header">
+              <FaRobot className="chat-icon" />
+              <h2>Message Assistant</h2>
             </div>
-          ))}
-          {chatLoading && (
-            <div className="chat-message bot">
-              <div className="message-content">Thinking...</div>
+
+            <div className="chat-messages">
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`chat-message ${msg.sender === 'user' ? 'user' : 'bot'}`}
+                >
+                  <div className="message-content">
+                    {msg.sender === 'user' ? <FaUser /> : <FaRobot />}
+                    {msg.content}
+                  </div>
+                  <div className="message-timestamp">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="chat-message bot">
+                  <div className="message-content">
+                    <FaRobot /> Thinking...
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            <form onSubmit={handleSendMessage} className="chat-input-form">
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                placeholder={selectedTemplate ? `Ask for ${selectedTemplate} writing suggestions...` : "Ask for writing suggestions..."}
+                disabled={chatLoading}
+              />
+              <button type="submit" disabled={chatLoading || !userInput.trim()}>
+                <FaPaperPlane />
+              </button>
+            </form>
+          </div>
         </div>
-        <form onSubmit={handleChatSubmit} className="chat-input-form">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Ask for help with your message..."
-            disabled={chatLoading}
-          />
-          <button type="submit" disabled={chatLoading || !userInput.trim()}>
-            Send
-          </button>
-        </form>
       </div>
     </div>
   );
