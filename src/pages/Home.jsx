@@ -13,10 +13,13 @@ import {
   FaTwitter,
   FaLinkedin,
   FaGithub,
-  FaInstagram
+  FaInstagram,
+  FaBell
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ChatBot from '../components/ChatBot';
+import './Home.css';
 
 const features = [
   {
@@ -130,9 +133,9 @@ const securityFeatures = [
 
 const footerLinks = {
   product: [
-    { name: 'Features', href: '#features' },
+    { name: 'Features', href: '/features' },
     { name: 'Security', href: '/security' },
-    { name: 'How It Works', href: '#how-it-works' },
+    { name: 'How It Works', href: '/how-it-works' },
     { name: 'Pricing', href: '/pricing' }
   ],
   resources: [
@@ -166,244 +169,179 @@ const Home = () => {
   const { currentUser } = useAuth();
 
   return (
-    <div className="page-wrapper">
-      <div className="page-container">
-        <div className="content-container">
+    <div className="home-page">
           {/* Hero Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="relative py-20 sm:py-32 flex flex-col items-center text-center"
+        className="hero-section"
           >
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black/90" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50" />
-              <img
-                src="https://images.unsplash.com/photo-1614064642639-e398cf05badb?auto=format&fit=crop&w=1920&q=80"
-                alt="Digital Legacy"
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-20"
-              />
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative max-w-4xl mx-auto px-4"
-            >
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 leading-tight">
-                Secure Your Digital Legacy
-              </h1>
-              <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Protect and preserve your digital assets for future generations. Schedule messages, secure important files, and ensure your digital legacy lives on.
+        <video
+          className="hero-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/Home_hero.mp4" type="video/mp4" />
+        </video>
+        <div className="hero-content">
+          <h1>Secure Your Digital Legacy</h1>
+          <p>
+            Protect and preserve your digital assets for future generations. 
+            Schedule messages, secure important files, and ensure your digital legacy lives on.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                {currentUser ? (
                   <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-8 py-3 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <FaShieldAlt className="w-5 h-5" />
-                    <span>Go to Dashboard</span>
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => navigate('/register')}
-                      className="px-8 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-all duration-200"
+            className="cta-button"
+            onClick={() => navigate(currentUser ? '/dashboard' : '/register')}
                     >
-                      Get Started
+            Get Started <FaArrowRight />
                     </button>
-                    <button
-                      onClick={() => navigate('/login')}
-                      className="px-8 py-3 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-all duration-200"
-                    >
-                      Sign In
-                    </button>
-                  </>
-                )}
               </div>
-            </motion.div>
           </motion.div>
 
           {/* Features Grid */}
+      <div className="features-grid">
+        {features.map((feature, index) => (
           <motion.div
+            key={index}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="py-20"
-          >
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Everything you need to secure your digital future
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="group cursor-pointer"
+            transition={{ duration: 0.6, delay: index * 0.1 }}
+            className="feature-card"
                   onClick={() => navigate(feature.link)}
                 >
-                  <div className="relative h-48 mb-6 overflow-hidden rounded-lg">
-                    <img
-                      src={feature.image}
-                      alt={feature.title}
-                      className="w-full h-full object-cover object-center transform group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/40 transition-colors duration-500" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-white/70 group-hover:scale-110 transition-transform duration-500">
-                        {feature.icon}
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-400 mb-4">{feature.description}</p>
-                  <button className="flex items-center text-sm text-gray-400 hover:text-white transition-colors duration-200">
-                    <span>Learn more</span>
-                    <FaArrowRight className="ml-2 w-4 h-4" />
-                  </button>
+            <div className="feature-icon">{feature.icon}</div>
+            <h3>{feature.title}</h3>
+            <p>{feature.description}</p>
                 </motion.div>
               ))}
             </div>
-          </motion.div>
 
-          {/* How It Works */}
+      {/* How It Works Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="py-20 bg-white/5 rounded-2xl"
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                Securing your digital legacy is simple and straightforward
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        className="how-it-works-section"
+      >
+        <h2 className="section-title">How It Works</h2>
+        <p className="section-subtitle">Securing your digital legacy is simple and straightforward</p>
+        <div className="steps-grid">
               {howItWorks.map((step, index) => (
                 <motion.div
-                  key={step.title}
+              key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="text-center"
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="step-card"
                 >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-full flex items-center justify-center">
-                    {step.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-400">{step.description}</p>
+              <div className="step-icon">{step.icon}</div>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Testimonials */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="py-20"
-          >
-            <h2 className="text-3xl font-bold text-center mb-12">
-              What Our Users Say
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="p-8 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-all duration-300"
-                >
-                  <div className="flex items-center mb-6">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/10">
-                        <img
-                          src={testimonial.image}
-                          alt={testimonial.author}
-                          className="w-full h-full object-cover"
-                        />
+      {/* Stats Section */}
+      <div className="stats-section">
+        <div className="stat-card">
+          <div className="stat-number">10K+</div>
+          <div className="stat-label">Active Users</div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-black flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                        </svg>
+        <div className="stat-card">
+          <div className="stat-number">50K+</div>
+          <div className="stat-label">Messages Sent</div>
                       </div>
+        <div className="stat-card">
+          <div className="stat-number">99.9%</div>
+          <div className="stat-label">Uptime</div>
                     </div>
-                    <div className="ml-4">
-                      <p className="font-medium text-lg">{testimonial.author}</p>
-                      <p className="text-sm text-gray-400">{testimonial.role}</p>
+        <div className="stat-card">
+          <div className="stat-number">24/7</div>
+          <div className="stat-label">Support</div>
                     </div>
                   </div>
-                  <p className="text-gray-300 text-lg leading-relaxed">"{testimonial.quote}"</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Security Features Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="py-20 bg-gradient-to-b from-white/5 to-transparent rounded-2xl"
+        className="security-section"
           >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Bank-Grade Security</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
+        <h2 className="section-title">Bank-Grade Security</h2>
+        <p className="section-subtitle">
                 Your digital legacy deserves the highest level of protection. Our platform employs multiple layers of security to keep your data safe.
               </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="security-grid">
               {securityFeatures.map((feature, index) => (
                 <motion.div
-                  key={feature.title}
+              key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors duration-300"
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="security-card"
                 >
-                  <div className="w-12 h-12 mb-4 bg-white/10 rounded-lg flex items-center justify-center text-white/70">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-400">{feature.description}</p>
+              <div className="security-icon">{feature.icon}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
+
+      {/* Testimonials Section */}
+      <div className="testimonials-section">
+        <h2 className="section-title">What Our Users Say</h2>
+        <div className="testimonials-grid">
+          {testimonials.map((testimonial, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="testimonial-card"
+            >
+              <p className="testimonial-content">{testimonial.quote}</p>
+              <div className="testimonial-author">
+                <img 
+                  src={testimonial.image} 
+                  alt={testimonial.author} 
+                  className="author-avatar"
+                />
+                <div className="author-info">
+                  <h4>{testimonial.author}</h4>
+                  <p>{testimonial.role}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
           {/* FAQ Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1 }}
-            className="py-20"
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                Find answers to common questions about our digital legacy platform
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        className="faq-section"
+      >
+        <h2 className="section-title">Frequently Asked Questions</h2>
+        <p className="section-subtitle">Find answers to common questions about our digital legacy platform</p>
+        <div className="faq-grid">
               {faqs.map((faq, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 hover:bg-white/10 transition-colors duration-300"
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="faq-card"
                 >
-                  <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
-                  <p className="text-gray-400">{faq.answer}</p>
+              <h3>{faq.question}</h3>
+              <p>{faq.answer}</p>
                 </motion.div>
               ))}
             </div>
@@ -414,70 +352,54 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.2 }}
-            className="py-20 text-center relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/20 via-blue-500/20 to-emerald-500/20"
-          >
-            <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-              <img
-                src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1920&q=80"
-                alt="Digital Security"
-                className="w-full h-full object-cover opacity-30 scale-105"
-              />
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-4xl font-bold mb-6">Secure Your Digital Legacy Today</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto mb-8">
+        className="cta-section"
+      >
+        <h2>Secure Your Digital Legacy Today</h2>
+        <p>
                 Join thousands of users who trust us with their digital legacy. Start preserving your memories and important documents for future generations.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="cta-buttons">
                 {currentUser ? (
                   <button
                     onClick={() => navigate('/create-message')}
-                    className="px-8 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-all duration-200 flex items-center space-x-2"
+              className="cta-button"
                   >
-                    <FaEnvelope className="w-5 h-5" />
-                    <span>Create Your First Message</span>
+              <FaEnvelope /> Create Your First Message
                   </button>
                 ) : (
                   <>
                     <button
                       onClick={() => navigate('/register')}
-                      className="px-8 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-all duration-200 flex items-center space-x-2"
+                className="cta-button"
                     >
-                      <FaShieldAlt className="w-5 h-5" />
-                      <span>Start Your Legacy</span>
+                <FaShieldAlt /> Start Your Legacy
                     </button>
                     <button
                       onClick={() => navigate('/create-message')}
-                      className="px-8 py-3 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                className="cta-button secondary"
                     >
-                      <FaEnvelope className="w-5 h-5 mr-2" />
-                      <span>Create Message</span>
+                <FaEnvelope /> Create Message
                     </button>
                   </>
                 )}
-              </div>
             </div>
           </motion.div>
 
           {/* Footer Section */}
-          <footer className="mt-20 border-t border-white/10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
+      <footer className="footer">
+        <div className="footer-content">
                 {/* Company Info */}
-                <div className="col-span-2 md:col-span-1">
-                  <h3 className="text-lg font-semibold mb-4">Digital Legacy</h3>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Secure your digital future and preserve your memories for generations to come.
-                  </p>
-                  <div className="flex space-x-4">
+          <div className="footer-company">
+            <h3>Digital Legacy</h3>
+            <p>Secure your digital future and preserve your memories for generations to come.</p>
+            <div className="social-links">
                     {footerLinks.social.map((item) => (
                       <a
                         key={item.name}
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-white transition-colors duration-200"
+                  className="social-link"
                       >
                         <span className="sr-only">{item.name}</span>
                         {item.icon}
@@ -486,106 +408,69 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Product Links */}
-                <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
-                    Product
-                  </h3>
-                  <ul className="space-y-3">
+          {/* Footer Links */}
+          <div className="footer-links">
+            <div className="footer-column">
+              <h4>Product</h4>
+              <ul>
                     {footerLinks.product.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-                        >
-                          {item.name}
-                        </a>
+                    <a href={item.href}>{item.name}</a>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* Resources Links */}
-                <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
-                    Resources
-                  </h3>
-                  <ul className="space-y-3">
+            <div className="footer-column">
+              <h4>Resources</h4>
+              <ul>
                     {footerLinks.resources.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-                        >
-                          {item.name}
-                        </a>
+                    <a href={item.href}>{item.name}</a>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* Company Links */}
-                <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
-                    Company
-                  </h3>
-                  <ul className="space-y-3">
+            <div className="footer-column">
+              <h4>Company</h4>
+              <ul>
                     {footerLinks.company.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-                        >
-                          {item.name}
-                        </a>
+                    <a href={item.href}>{item.name}</a>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* Legal Links */}
-                <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">
-                    Legal
-                  </h3>
-                  <ul className="space-y-3">
+            <div className="footer-column">
+              <h4>Legal</h4>
+              <ul>
                     {footerLinks.legal.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-                        >
-                          {item.name}
-                        </a>
+                    <a href={item.href}>{item.name}</a>
                       </li>
                     ))}
                   </ul>
+            </div>
                 </div>
               </div>
 
               {/* Bottom Bar */}
-              <div className="border-t border-white/10 py-8">
-                <div className="flex flex-col md:flex-row justify-between items-center">
-                  <p className="text-sm text-gray-400">
-                    © {new Date().getFullYear()} Digital Legacy. All rights reserved.
-                  </p>
-                  <div className="flex space-x-6 mt-4 md:mt-0">
+        <div className="footer-bottom">
+          <p>© {new Date().getFullYear()} Digital Legacy. All rights reserved.</p>
+          <div className="footer-legal">
                     {footerLinks.legal.slice(0, 2).map((item) => (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-                      >
+              <a key={item.name} href={item.href}>
                         {item.name}
                       </a>
                     ))}
-                  </div>
-                </div>
               </div>
             </div>
           </footer>
-        </div>
-      </div>
+
+      {/* Add ChatBot component */}
+      <ChatBot />
     </div>
   );
 };

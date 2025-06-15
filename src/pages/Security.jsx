@@ -1,78 +1,132 @@
-import { useState } from 'react';
-import { FaShieldAlt, FaKey, FaLock, FaMobile } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { FaShieldAlt, FaLock, FaUserShield, FaKey, FaCheckCircle, FaFingerprint, FaArrowRight } from 'react-icons/fa';
+import BackButton from '../components/BackButton';
+import './Security.css';
 
 const Security = () => {
-  const [settings] = useState({
-    twoFactor: true,
-    passwordLastChanged: '2 weeks ago',
-    lastLogin: '1 hour ago',
-    activeDevices: 2,
-  });
-
-  const securityItems = [
+  const securityFeatures = [
     {
-      icon: <FaKey />,
-      title: 'Password',
-      description: 'Last changed ' + settings.passwordLastChanged,
-      action: 'Change',
-    },
-    {
-      icon: <FaMobile />,
-      title: 'Two-Factor Authentication',
-      description: settings.twoFactor ? 'Enabled' : 'Disabled',
-      action: 'Configure',
+      icon: <FaShieldAlt />,
+      title: "End-to-End Encryption",
+      description: "Your data is encrypted before it leaves your device and can only be decrypted by authorized recipients.",
+      details: [
+        "256-bit AES encryption",
+        "Zero-knowledge architecture",
+        "Secure key management"
+      ]
     },
     {
       icon: <FaLock />,
-      title: 'Active Sessions',
-      description: settings.activeDevices + ' devices connected',
-      action: 'Manage',
+      title: "Secure Storage",
+      description: "Your digital assets are stored in our highly secure, redundant cloud infrastructure.",
+      details: [
+        "Multiple data centers",
+        "Regular backups",
+        "Disaster recovery"
+      ]
     },
+    {
+      icon: <FaUserShield />,
+      title: "Access Control",
+      description: "Granular control over who can access your digital legacy and when.",
+      details: [
+        "Role-based access",
+        "Time-based permissions",
+        "Multi-factor authentication"
+      ]
+    },
+    {
+      icon: <FaKey />,
+      title: "Authentication",
+      description: "Multiple layers of security to ensure only authorized access to your account.",
+      details: [
+        "2FA support",
+        "Biometric authentication",
+        "Secure password policies"
+      ]
+    }
+  ];
+
+  const securityPractices = [
+    {
+      title: "Regular Security Audits",
+      description: "Our systems undergo continuous security assessments and penetration testing.",
+      icon: <FaCheckCircle />
+    },
+    {
+      title: "Compliance Standards",
+      description: "We adhere to industry-leading security standards and regulations.",
+      icon: <FaCheckCircle />
+    },
+    {
+      title: "Privacy First",
+      description: "Your data privacy is our top priority. We never share your information with third parties.",
+      icon: <FaCheckCircle />
+    }
   ];
 
   return (
-    <div className="has-navbar-spacing">
-      <div className="page-wrapper">
-        <div className="page-container">
-          <div className="content-container">
-            <div className="flex items-center space-x-3 mb-6">
-              <FaShieldAlt className="w-6 h-6 text-gray-400" />
-              <h1 className="text-2xl font-bold">Security Settings</h1>
-            </div>
+    <div className="security-page">
+      <BackButton />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="security-hero"
+      >
+        <h1>Security at Digital Legacy</h1>
+        <p>Your digital legacy is protected by state-of-the-art security measures</p>
+      </motion.div>
 
-            <div className="space-y-4">
-              {securityItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-black border border-white/5 hover:border-white/10 transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="text-gray-400">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{item.title}</h3>
-                      <p className="text-sm text-gray-400">{item.description}</p>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors duration-200">
-                    {item.action}
-                  </button>
-                </div>
+      <div className="security-features">
+        {securityFeatures.map((feature, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="security-feature-card"
+          >
+            <div className="feature-icon">{feature.icon}</div>
+            <h3>{feature.title}</h3>
+            <p>{feature.description}</p>
+            <ul className="feature-details">
+              {feature.details.map((detail, idx) => (
+                <li key={idx}>{detail}</li>
               ))}
-            </div>
-
-            <div className="mt-8">
-              <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
-              <div className="p-4 bg-black border border-white/5">
-                <p className="text-sm text-gray-400">
-                  Last login: {settings.lastLogin}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </ul>
+          </motion.div>
+        ))}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="security-practices"
+      >
+        <h2>Our Security Practices</h2>
+        <div className="practices-grid">
+          {securityPractices.map((practice, index) => (
+            <div key={index} className="practice-card">
+              <div className="practice-icon">{practice.icon}</div>
+              <h3>{practice.title}</h3>
+              <p>{practice.description}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="security-cta"
+      >
+        <h2>Ready to Secure Your Digital Legacy?</h2>
+        <p>Join thousands of users who trust us with their digital assets</p>
+        <button className="cta-button">Get Started</button>
+      </motion.div>
     </div>
   );
 };

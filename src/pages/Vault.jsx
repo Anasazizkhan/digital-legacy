@@ -33,7 +33,7 @@ const Vault = () => {
       icon: <FaFileAlt />,
       label: 'Documents',
       count: 24,
-      color: 'from-blue-500/20 to-indigo-500/20 text-blue-400'
+      color: 'from-blue-500/20 to-blue-500/20 text-blue-400'
     },
     {
       icon: <FaImage />,
@@ -107,7 +107,7 @@ const Vault = () => {
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute w-96 h-96 -top-48 -left-48 bg-blue-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-purple-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-blue-500/20 rounded-full blur-3xl"></div>
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
@@ -118,7 +118,7 @@ const Vault = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <div className="flex justify-center mb-6">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-white/10">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/10 border border-white/10">
                 <FaLock className="w-12 h-12 text-blue-400" />
               </div>
             </div>
@@ -176,7 +176,7 @@ const Vault = () => {
                 className="bg-black/30 p-6 rounded-xl border border-white/10 backdrop-blur-sm hover:bg-black/40 transition-all duration-300"
               >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 text-blue-400">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/10 text-blue-400">
                     {feature.icon}
                   </div>
                   <div>

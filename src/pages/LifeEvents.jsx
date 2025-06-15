@@ -46,11 +46,11 @@ const LifeEvents = () => {
   const getEventColor = (type) => {
     switch (type) {
       case 'education':
-        return 'from-blue-500/20 to-indigo-500/20 border-blue-500/50 text-blue-400';
+        return 'from-blue-500/20 to-blue-500/20 border-blue-500/50 text-blue-400';
       case 'relationship':
         return 'from-pink-500/20 to-rose-500/20 border-pink-500/50 text-pink-400';
       case 'career':
-        return 'from-purple-500/20 to-violet-500/20 border-purple-500/50 text-purple-400';
+        return 'from-blue-500/20 to-blue-500/20 border-blue-500/50 text-blue-400';
       default:
         return 'from-gray-500/20 to-slate-500/20 border-gray-500/50 text-gray-400';
     }
@@ -100,7 +100,7 @@ const LifeEvents = () => {
           transition={{ delay: 0.1 }}
           className="relative mb-12 pl-8"
         >
-          <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-blue-500/50 via-purple-500/50 to-pink-500/50"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-blue-500/50 via-blue-500/50 to-blue-500/50"></div>
           
           {events.map((event, index) => (
             <motion.div
@@ -110,7 +110,7 @@ const LifeEvents = () => {
               transition={{ delay: 0.2 + index * 0.1 }}
               className={`relative mb-8 last:mb-0`}
             >
-              <div className="absolute -left-8 top-0 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg shadow-blue-500/20 border-2 border-black"></div>
+              <div className="absolute -left-8 top-0 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-blue-500 shadow-lg shadow-blue-500/20 border-2 border-black"></div>
               
               <div className={`group bg-black/30 p-6 rounded-xl border border-white/10 hover:bg-black/40 transition-all duration-300 backdrop-blur-sm ml-4 hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] ${
                 selectedEvent?.id === event.id ? 'border-blue-500/50 bg-black/40' : ''

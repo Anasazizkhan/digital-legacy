@@ -13,6 +13,7 @@
     "@heroicons/react": "^2.2.0",
     "aos": "^2.3.4",
     "axios": "^1.9.0",
+    "cohere-ai": "^7.17.1",
     "date-fns": "^4.1.0",
     "datepicker": "^0.0.0",
     "firebase": "^11.7.3",

@@ -48,9 +48,9 @@ const ViewMessages = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'locked':
-        return 'from-blue-500/10 to-indigo-500/10 text-blue-400 border-blue-500/50';
+        return 'from-blue-500/10 to-blue-500/10 text-blue-400 border-blue-500/50';
       case 'pending':
-        return 'from-purple-500/10 to-violet-500/10 text-purple-400 border-purple-500/50';
+        return 'from-blue-500/10 to-blue-500/10 text-blue-400 border-blue-500/50';
       case 'draft':
         return 'from-yellow-500/10 to-orange-500/10 text-yellow-400 border-yellow-500/50';
       default:
@@ -78,7 +78,7 @@ const ViewMessages = () => {
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-900 to-black py-16 mb-8">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute w-96 h-96 -top-48 -left-48 bg-blue-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-purple-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-blue-500/20 rounded-full blur-3xl"></div>
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
@@ -89,7 +89,7 @@ const ViewMessages = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <div className="flex justify-center mb-6">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-white/10">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/10 border border-white/10">
                 <FaEnvelope className="w-12 h-12 text-blue-400" />
               </div>
             </div>
@@ -174,7 +174,7 @@ const ViewMessages = () => {
                     <button className="p-2 text-gray-400 hover:text-blue-400 transition-colors">
                       <FaEye className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-purple-400 transition-colors">
+                    <button className="p-2 text-gray-400 hover:text-blue-400 transition-colors">
                       <FaEdit className="w-4 h-4" />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-red-400 transition-colors">
@@ -203,7 +203,7 @@ const ViewMessages = () => {
                   <div className="flex items-center gap-2">
                     <span className={`px-3 py-1 rounded-full text-xs ${
                       message.category === 'personal' ? 'bg-blue-500/20 text-blue-400' :
-                      message.category === 'celebration' ? 'bg-purple-500/20 text-purple-400' :
+                      message.category === 'celebration' ? 'bg-blue-500/20 text-blue-400' :
                       'bg-green-500/20 text-green-400'
                     }`}>
                       {message.category.charAt(0).toUpperCase() + message.category.slice(1)}
