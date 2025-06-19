@@ -42,4 +42,28 @@
     left: 1rem;
     padding: 0.5rem 1rem;
   }
+}
+
+/* Navbar.css - Scoped styles for Navbar component */
+
+.navbar-legacy .lock-3d-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+}
+
+.navbar-legacy .lock-3d {
+  transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+  filter: drop-shadow(0 2px 6px rgba(30,40,60,0.10));
+}
+
+.navbar-legacy .lock-3d-container:hover .lock-3d {
+  transform: rotateY(360deg) scale(1.08);
+}
+
+/* Prevents conflicts with other icons */
+.navbar-legacy .lock-3d {
+  pointer-events: none;
 } 

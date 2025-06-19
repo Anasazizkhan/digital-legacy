@@ -1,0 +1,83 @@
+/* Navbar.css - Scoped styles for Navbar component */
+
+.navbar-legacy .lock-3d-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+.navbar-legacy .lock-3d {
+  transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+  filter: drop-shadow(0 2px 8px rgba(30,40,60,0.10));
+  animation: lock-float 3s ease-in-out infinite;
+}
+
+.navbar-legacy .lock-shackle {
+  transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: 20px 28px; /* left base of the shackle */
+}
+
+.navbar-legacy .lock-3d-container:hover .lock-shackle {
+  transform: rotate(-55deg);
+}
+
+.navbar-legacy .lock-3d-container:hover .lock-3d {
+  /* No extra shadow or background */
+}
+
+@keyframes lock-float {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Prevents conflicts with other icons */
+.navbar-legacy .lock-3d {
+  pointer-events: none;
+}
+
+/* Hamburger menu button */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  z-index: 1100;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .nav-hamburger {
+    display: block;
+    position: absolute;
+    right: 1.5rem;
+    top: 1.2rem;
+  }
+  .nav-links {
+    display: none !important;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    background: linear-gradient(to right, rgba(0,0,0,0.98), rgba(0,0,0,0.92));
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    padding: 1.5rem 0 1rem 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  .nav-links.open {
+    display: flex !important;
+  }
+  .nav-links a {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(59,130,246,0.08);
+  }
+} 

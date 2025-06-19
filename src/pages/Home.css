@@ -301,9 +301,7 @@
 }
 
 .testimonial-card:hover {
-  transform: translateY(-5px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  /* No-op, handled by framer-motion */
 }
 
 .testimonial-content {
@@ -854,4 +852,45 @@ p, span, a, button {
   .stat-card h3 {
     font-size: 1.75rem;
   }
+}
+
+.floating-card {
+  perspective: 900px;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  z-index: 1;
+  /* Remove default hover for testimonial-card, handled by framer-motion */
+}
+
+/* Optionally, you can remove the .testimonial-card:hover effect if it conflicts */
+.testimonial-card:hover {
+  /* No-op, handled by framer-motion */
+}
+
+.footer-link {
+  position: relative;
+  display: inline-block;
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.footer-link:hover {
+  color: #3b82f6;
+}
+.footer-link-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.footer-link-arrow {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.25s, transform 0.25s;
+  display: inline-flex;
+  align-items: center;
+}
+.footer-link:hover .footer-link-arrow {
+  opacity: 1;
+  transform: translateX(0);
 } 

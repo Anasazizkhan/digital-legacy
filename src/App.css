@@ -175,12 +175,13 @@
     padding: 1rem;
   }
 
-  .nav-links {
+  /* Remove or override this block to avoid conflict with Navbar.css */
+  /* .nav-links {
     width: 100%;
     justify-content: center;
     gap: 1rem;
     flex-wrap: wrap;
-  }
+  } */
 
   .nav-links a {
     font-size: 0.875rem;

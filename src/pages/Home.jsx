@@ -86,6 +86,48 @@ const testimonials = [
     author: "David L.",
     role: "IT Professional",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "Digital Legacy made it easy to organize my important documents for my family.",
+    author: "Priya S.",
+    role: "Mother & Teacher",
+    image: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "I love the peace of mind knowing my memories are safe and will be delivered.",
+    author: "Carlos G.",
+    role: "Photographer",
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "The interface is beautiful and easy to use. Highly recommended!",
+    author: "Emily T.",
+    role: "Designer",
+    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "Setting up my digital legacy was surprisingly simple and quick.",
+    author: "John K.",
+    role: "Retired Engineer",
+    image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "The support team is responsive and very helpful.",
+    author: "Aisha R.",
+    role: "Entrepreneur",
+    image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "I feel secure knowing my wishes will be honored.",
+    author: "Liam P.",
+    role: "Grandparent",
+    image: "https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=150&q=80"
+  },
+  {
+    quote: "A must-have for anyone who cares about their digital legacy.",
+    author: "Sophia W.",
+    role: "Writer",
+    image: "https://images.unsplash.com/photo-1519340333755-c1aa5571fd46?auto=format&fit=crop&w=150&q=80"
   }
 ];
 
@@ -300,10 +342,31 @@ const Home = () => {
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="testimonial-card"
+              initial={{ scale: 0.97, rotateZ: 0 }}
+              animate={{
+                scale: [0.97, 1.03, 0.98, 1],
+                rotateZ: [0, 2, -2, 0],
+                boxShadow: [
+                  '0 2px 12px rgba(30,40,60,0.10)',
+                  '0 8px 32px rgba(80,120,255,0.10)',
+                  '0 4px 24px rgba(80,120,255,0.10)',
+                  '0 2px 12px rgba(30,40,60,0.10)'
+                ]
+              }}
+              transition={{
+                duration: 3.5,
+                delay: -0.3 * index,
+                repeat: Infinity,
+                repeatType: 'mirror',
+                ease: 'easeInOut'
+              }}
+              whileHover={{
+                scale: 1.07,
+                rotateX: 8,
+                rotateY: 8,
+                boxShadow: '0 12px 40px rgba(80,120,255,0.18)'
+              }}
+              className="testimonial-card floating-card"
             >
               <p className="testimonial-content">{testimonial.quote}</p>
               <div className="testimonial-author">
@@ -415,7 +478,9 @@ const Home = () => {
               <ul>
                     {footerLinks.product.map((item) => (
                       <li key={item.name}>
-                    <a href={item.href}>{item.name}</a>
+                        <a href={item.href} className="footer-link">
+                          <span className="footer-link-text">{item.name}<span className="footer-link-arrow"><FaArrowRight /></span></span>
+                        </a>
                       </li>
                     ))}
                   </ul>
@@ -426,7 +491,9 @@ const Home = () => {
               <ul>
                     {footerLinks.resources.map((item) => (
                       <li key={item.name}>
-                    <a href={item.href}>{item.name}</a>
+                        <a href={item.href} className="footer-link">
+                          <span className="footer-link-text">{item.name}<span className="footer-link-arrow"><FaArrowRight /></span></span>
+                        </a>
                       </li>
                     ))}
                   </ul>
@@ -437,7 +504,9 @@ const Home = () => {
               <ul>
                     {footerLinks.company.map((item) => (
                       <li key={item.name}>
-                    <a href={item.href}>{item.name}</a>
+                        <a href={item.href} className="footer-link">
+                          <span className="footer-link-text">{item.name}<span className="footer-link-arrow"><FaArrowRight /></span></span>
+                        </a>
                       </li>
                     ))}
                   </ul>
@@ -448,7 +517,9 @@ const Home = () => {
               <ul>
                     {footerLinks.legal.map((item) => (
                       <li key={item.name}>
-                    <a href={item.href}>{item.name}</a>
+                        <a href={item.href} className="footer-link">
+                          <span className="footer-link-text">{item.name}<span className="footer-link-arrow"><FaArrowRight /></span></span>
+                        </a>
                       </li>
                     ))}
                   </ul>
