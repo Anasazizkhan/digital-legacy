@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 
 // Backend API URL from environment variable
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
@@ -33,6 +34,7 @@ if (!getApps().length) {
 // Initialize Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Enable offline persistence
 enableIndexedDbPersistence(db).catch((err) => {
@@ -45,4 +47,4 @@ enableIndexedDbPersistence(db).catch((err) => {
     }
 });
 
-export { app, auth, db, BACKEND_API_URL }; 
+export { app, auth, db, storage, BACKEND_API_URL }; 

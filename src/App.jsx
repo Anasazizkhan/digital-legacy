@@ -20,16 +20,38 @@ import Features from './pages/Features';
 import Documentation from './pages/Documentation';
 import ApiReference from './pages/ApiReference';
 import Support from './pages/Support';
+import Vault from './pages/Vault';
 import './App.css';
 
 // Protected Route wrapper component
 function ProtectedRoute({ children }) {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   
+  console.log('ProtectedRoute - currentUser:', currentUser, 'loading:', loading);
+  
+  // If still loading, show loading screen
+  if (loading) {
+    console.log('ProtectedRoute - still loading, showing loading screen');
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        color: 'white'
+      }}>
+        <div>Loading authentication...</div>
+      </div>
+    );
+  }
+  
+  // If not loading and no user, redirect to login
   if (!currentUser) {
+    console.log('ProtectedRoute - redirecting to login because no currentUser');
     return <Navigate to="/login" replace />;
   }
   
+  console.log('ProtectedRoute - rendering children');
   return children;
 }
 
@@ -79,6 +101,7 @@ function App() {
               <Route path="/message-templates" element={<ProtectedRoute><MessageTemplates /></ProtectedRoute>} />
               <Route path="/message-templates-list" element={<ProtectedRoute><MessageTemplatesList /></ProtectedRoute>} />
               <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+              <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               
               {/* Catch all route - redirect to home */}

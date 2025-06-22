@@ -26,6 +26,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', protected: true, icon: <FaChartBar className="w-4 h-4" /> },
   { name: 'Messages', href: '/messages', protected: true, icon: <FaInbox className="w-4 h-4" /> },
   { name: 'Create Message', href: '/message-templates', protected: true, icon: <FaEnvelope className="w-4 h-4" /> },
+  { name: 'Vault', href: '/vault', protected: true, icon: <FaShieldAlt className="w-4 h-4" /> },
   { name: 'Profile', href: '/profile', protected: true, icon: <FaUser className="w-4 h-4" /> }
 ];
 
@@ -94,7 +95,7 @@ const Navbar = () => {
                 <rect x="30.5" y="50" width="3" height="7" rx="1.5" fill="#bbb"/>
                 <defs>
                   <filter id="lockBodyShadow" x="0" y="28" width="64" height="40" filterUnits="userSpaceOnUse">
-                    <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.10"/>
+                    <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.10"/>
                   </filter>
                 </defs>
               </svg>

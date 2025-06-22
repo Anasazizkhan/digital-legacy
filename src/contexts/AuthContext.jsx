@@ -100,14 +100,43 @@ export function AuthProvider({ children }) {
     return null;
   }
 
+  async function refreshToken() {
+    if (currentUser) {
+      try {
+        const idToken = await currentUser.getIdToken(true); // Force refresh
+        localStorage.setItem('authToken', idToken);
+        console.log('AuthContext - token refreshed');
+        return idToken;
+      } catch (error) {
+        console.error('AuthContext - failed to refresh token:', error);
+        throw error;
+      }
+    }
+  }
+
   useEffect(() => {
+    console.log('AuthContext - setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('AuthContext - auth state changed:', user ? user.email : 'null');
       if (user) {
+        // Get Firebase ID token for backend authentication
+        try {
+          const idToken = await user.getIdToken();
+          console.log('AuthContext - got ID token, storing in localStorage');
+          localStorage.setItem('authToken', idToken);
+        } catch (error) {
+          console.error('AuthContext - failed to get ID token:', error);
+        }
+        
         const userData = await getUserData(user.uid);
+        console.log('AuthContext - user data loaded:', userData);
         setCurrentUser({ ...user, ...userData });
       } else {
+        console.log('AuthContext - setting currentUser to null, removing token');
+        localStorage.removeItem('authToken');
         setCurrentUser(null);
       }
+      console.log('AuthContext - setting loading to false');
       setLoading(false);
     });
 
@@ -116,12 +145,14 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    loading,
     register,
     login,
     signInWithGoogle,
     logout,
     updateUserProfile,
-    getUserData
+    getUserData,
+    refreshToken
   };
 
   return (

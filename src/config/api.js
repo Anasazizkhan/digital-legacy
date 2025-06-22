@@ -1,55 +1,90 @@
 import axios from 'axios';
-import { auth } from '../firebase';
 
-const API_URL = 'http://localhost:5000/api';
+// Token refresh utility
+let tokenRefreshPromise = null;
 
-// Create axios instance with default config
+const refreshAuthToken = async () => {
+  if (tokenRefreshPromise) {
+    return tokenRefreshPromise;
+  }
+  
+  tokenRefreshPromise = new Promise(async (resolve, reject) => {
+    try {
+      // Get the current Firebase user and refresh token
+      const { getAuth } = await import('firebase/auth');
+      const { app } = await import('../firebase');
+      const auth = getAuth(app);
+      const user = auth.currentUser;
+      
+      if (user) {
+        const idToken = await user.getIdToken(true);
+        localStorage.setItem('authToken', idToken);
+        console.log('API - Token refreshed successfully');
+        resolve(idToken);
+      } else {
+        reject(new Error('No user found'));
+      }
+    } catch (error) {
+      console.error('API - Failed to refresh token:', error);
+      reject(error);
+    } finally {
+      tokenRefreshPromise = null;
+    }
+  });
+  
+  return tokenRefreshPromise;
+};
+
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: 'http://localhost:5000/api',
+  timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to add auth token
+// Request interceptor to add auth token
 api.interceptors.request.use(
-  async (config) => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const token = await user.getIdToken();
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-      return config;
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor to handle errors
+// Response interceptor to handle errors - NO AUTOMATIC REDIRECTS
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error('Response error:', error.response.data);
-      const message = error.response.data?.message || 'An error occurred';
-      return Promise.reject(new Error(message));
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error('Request error:', error.request);
-      return Promise.reject(new Error('No response from server'));
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error('Error:', error.message);
-      return Promise.reject(error);
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    console.error('API Error:', error.response?.status, error.response?.data, error.message);
+    
+    // If we get a 401 error, try to refresh the token
+    if (error.response?.status === 401) {
+      console.log('API - Got 401 error, attempting token refresh...');
+      
+      try {
+        const newToken = await refreshAuthToken();
+        if (newToken) {
+          console.log('API - Token refreshed, retrying request...');
+          
+          // Retry the original request with new token
+          error.config.headers.Authorization = `Bearer ${newToken}`;
+          return api.request(error.config);
+        }
+      } catch (refreshError) {
+        console.error('API - Failed to refresh token:', refreshError);
+      }
     }
+    
+    // Don't automatically redirect - let components handle errors
+    return Promise.reject(error);
   }
 );
 

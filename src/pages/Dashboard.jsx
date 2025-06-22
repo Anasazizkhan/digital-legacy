@@ -125,6 +125,12 @@ const Dashboard = () => {
       link: '/messages'
     },
     {
+      title: 'Secure Vault',
+      description: 'Access your quantum-secured digital vault',
+      icon: '🔐',
+      link: '/vault'
+    },
+    {
       title: 'Profile Settings',
       description: 'Update your account information',
       icon: '⚙️',

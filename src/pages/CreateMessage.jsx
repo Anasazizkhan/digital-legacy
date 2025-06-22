@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createMessage } from '../services/messageService';
 import { sendMessageToCohere } from '../services/claudeService';
 import { FaPaperPlane, FaRobot, FaUser, FaArrowLeft } from 'react-icons/fa';
+import MediaUpload from '../components/MediaUpload';
 import api from '../services/api';
 import './CreateMessage.css';
 
@@ -60,6 +61,11 @@ const CreateMessage = () => {
     scheduledTime: '',
     recipientEmail: '',
     emailOption: 'own'
+  });
+  const [mediaAttachments, setMediaAttachments] = useState({
+    audio: null,
+    video: null,
+    images: []
   });
   const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
@@ -148,6 +154,20 @@ const CreateMessage = () => {
     return templates[templateId];
   };
 
+  const handleMediaUpload = (type, mediaData) => {
+    setMediaAttachments(prev => ({
+      ...prev,
+      [type]: mediaData
+    }));
+  };
+
+  const handleMediaRemove = (type) => {
+    setMediaAttachments(prev => ({
+      ...prev,
+      [type]: null
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -166,7 +186,8 @@ const CreateMessage = () => {
         scheduledFor: scheduledDateTime.toISOString(),
         recipientEmail: messageDetails.recipientEmail,
         type: selectedTemplate || 'custom',
-        status: 'scheduled'
+        status: 'scheduled',
+        media: mediaAttachments
       };
 
       await createMessage(messageData);
@@ -277,6 +298,12 @@ const CreateMessage = () => {
                       placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].content : "Write your message here..."}
                     />
                   </div>
+
+                  <MediaUpload
+                    onMediaUpload={handleMediaUpload}
+                    onMediaRemove={handleMediaRemove}
+                    existingMedia={mediaAttachments}
+                  />
 
                   <div className="form-group">
                     <label htmlFor="scheduledDate">

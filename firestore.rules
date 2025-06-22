@@ -10,10 +10,50 @@ service cloud.firestore {
     match /messages/{messageId} {
       allow read: if request.auth != null && (
         resource.data.senderId == request.auth.uid || 
-        resource.data.recipientId == request.auth.uid
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
       );
-      allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.senderId == request.auth.uid;
+      allow create: if request.auth != null && (
+        request.resource.data.senderId == request.auth.uid ||
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update, delete: if request.auth != null && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.userId == request.auth.uid
+      );
+      
+      // Validate media structure if present
+      allow create, update: if request.auth != null && (
+        !('media' in request.resource.data) ||
+        (
+          'media' in request.resource.data &&
+          request.resource.data.media is map &&
+          (
+            !('audio' in request.resource.data.media) ||
+            request.resource.data.media.audio == null ||
+            (
+              request.resource.data.media.audio is map &&
+              'url' in request.resource.data.media.audio &&
+              'type' in request.resource.data.media.audio &&
+              'size' in request.resource.data.media.audio
+            )
+          ) &&
+          (
+            !('video' in request.resource.data.media) ||
+            request.resource.data.media.video == null ||
+            (
+              request.resource.data.media.video is map &&
+              'url' in request.resource.data.media.video &&
+              'type' in request.resource.data.media.video &&
+              'size' in request.resource.data.media.video
+            )
+          ) &&
+          (
+            !('images' in request.resource.data.media) ||
+            request.resource.data.media.images is list
+          )
+        )
+      );
     }
     
     // Vault collection rules

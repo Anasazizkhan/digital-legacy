@@ -78,27 +78,27 @@
 
 /* Template-specific background images */
 .template-card[href*="love"]::before {
-  background-image: url('/images/templates/love-bg.jpg');
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52, #ff4757);
 }
 
 .template-card[href*="wisdom"]::before {
-  background-image: url('/images/templates/wisdom-bg.jpg');
+  background: linear-gradient(135deg, #4b0082, #8a2be2, #9370db);
 }
 
 .template-card[href*="memories"]::before {
-  background-image: url('/images/templates/memories-bg.jpg');
+  background: linear-gradient(135deg, #008080, #20b2aa, #48cae4);
 }
 
 .template-card[href*="gratitude"]::before {
-  background-image: url('/images/templates/gratitude-bg.jpg');
+  background: linear-gradient(135deg, #ffd700, #ffed4e, #ffc107);
 }
 
 .template-card[href*="advice"]::before {
-  background-image: url('/images/templates/advice-bg.jpg');
+  background: linear-gradient(135deg, #00ff00, #32cd32, #90ee90);
 }
 
 .template-card[href*="farewell"]::before {
-  background-image: url('/images/templates/farewell-bg.jpg');
+  background: linear-gradient(135deg, #808080, #a9a9a9, #c0c0c0);
 }
 
 .template-card:hover {
