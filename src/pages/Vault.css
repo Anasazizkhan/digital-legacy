@@ -128,13 +128,20 @@
   margin: 0 auto 1.5rem auto;
 }
 
+.vault-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 /* Create Vault Button */
-.create-vault-btn {
+.create-vault-btn,
+.collab-requests-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(to right, #38bdf8, #3b82f6);
   color: white;
   border: none;
   border-radius: 8px;
@@ -142,19 +149,31 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.create-vault-btn {
+  background: linear-gradient(to right, #38bdf8, #3b82f6);
   box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
 }
 
-.create-vault-btn:hover {
+.collab-requests-btn {
+  background: linear-gradient(to right, #10b981, #059669);
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.create-vault-btn:hover,
+.collab-requests-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 10px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 7px 10px rgba(16, 185, 129, 0.3);
 }
 
 /* Vault List Container */
 .vault-list-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
 }
 
 /* Empty Vaults Message */
@@ -163,18 +182,18 @@
     grid-column: 1 / -1; /* Span all columns */
     padding: 3rem;
     background-color: #1e293b;
-    border-radius: 12px;
+  border-radius: 12px;
 }
 
 .empty-vaults-message h3 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
     color: #fff;
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .empty-vaults-message p {
     color: #94a3b8;
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .create-first-vault-btn {
@@ -658,4 +677,311 @@
   .file-upload-area {
     padding: 1.5rem;
   }
+  
+  /* Section headers on mobile */
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .section-header p {
+    font-size: 0.9rem;
+  }
+  
+  /* Collaborator badge on mobile */
+  .collaborator-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  /* Add collaborator button on mobile */
+  .add-collaborator-btn {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .add-collaborator-btn .btn-text {
+    font-size: 0.65rem;
+  }
+  
+  /* Collaborator modal on mobile */
+  .collaborator-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+}
+
+/* Vault Sections */
+.vault-section {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 1rem;
+}
+
+.section-header h2 {
+  font-size: 1.75rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.section-header p {
+  color: #94a3b8;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.check-requests-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.check-requests-btn:hover {
+  background-color: #334155;
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+/* Collaborator Badge */
+.collaborator-badge {
+  display: flex;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.vault-card.collaborated {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #1e293b, #1e3a8a);
+}
+
+.vault-card.collaborated:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+}
+
+.vault-card.collaborated .vault-icon {
+  color: #60a5fa;
+}
+
+/* Add Collaborator Button */
+.add-collaborator-btn {
+  padding: 0.5rem 1rem;
+  background-color: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.add-collaborator-btn:hover {
+  background-color: #7c3aed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+}
+
+.add-collaborator-btn .btn-text {
+  display: inline;
+  font-size: 0.75rem;
+}
+
+/* Collaborator Modal */
+.collaborator-modal {
+  max-width: 500px;
+  width: 90%;
+}
+
+.collaborator-modal .modal-content {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.collaborator-modal .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.collaborator-modal label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  text-align: left;
+}
+
+.collaborator-modal input[type="email"] {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #334155;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.collaborator-modal input[type="email"]:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.collaborator-modal input[type="email"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Invite Error and Success Messages */
+.invite-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid #f87171;
+  border-radius: 6px;
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.invite-success {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  color: #10b981;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.invite-error svg,
+.invite-success svg {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Send Invite Button */
+.send-invite-btn {
+  background: linear-gradient(to right, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.send-invite-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.send-invite-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Collaboration Requests Section */
+.collaboration-requests-section {
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  border: 1px solid #334155;
+}
+
+.collaboration-requests-section h2 {
+  font-size: 1.75rem;
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.request-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.request-card:hover {
+  background-color: #2c3a4f;
+}
+
+.request-info p {
+  margin: 0;
+  color: #e2e8f0;
+}
+
+.request-info p strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.request-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.request-actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accept-btn {
+  background-color: #22c55e;
+  color: white;
+}
+
+.accept-btn:hover {
+  background-color: #16a34a;
+}
+
+.decline-btn {
+  background-color: #ef4444;
+  color: white;
+}
+
+.decline-btn:hover {
+  background-color: #dc2626;
 } 

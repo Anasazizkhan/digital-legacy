@@ -105,9 +105,9 @@ export const deleteVaultContent = async (vaultId, contentId) => {
 };
 
 // Collaboration Management
-export const addCollaborator = async (vaultId, collaboratorData) => {
+export const sendCollaborationInvite = async (vaultId, email) => {
   try {
-    const response = await api.post(`/vaults/${vaultId}/collaborators`, collaboratorData);
+    const response = await api.post(`/vaults/${vaultId}/collaboration-requests`, { email });
     return response.data;
   } catch (error) {
     throw error;
@@ -135,6 +135,24 @@ export const removeCollaborator = async (vaultId, collaboratorId) => {
 export const updateCollaboratorRole = async (vaultId, collaboratorId, role) => {
   try {
     const response = await api.patch(`/vaults/${vaultId}/collaborators/${collaboratorId}`, { role });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCollaborationRequests = async () => {
+  try {
+    const response = await api.get('/vaults/collaboration-requests');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const acceptInviteByToken = async (token) => {
+  try {
+    const response = await api.post('/vaults/collaboration-requests/accept', { token });
     return response.data;
   } catch (error) {
     throw error;
