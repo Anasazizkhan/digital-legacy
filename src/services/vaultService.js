@@ -12,9 +12,12 @@ export const createVault = async (vaultData) => {
 
 export const getVaults = async () => {
   try {
-    const response = await api.get('/vaults');
+    console.log('Fetching all vaults...');
+    const response = await api.get('/vaults/all');
+    console.log('Vaults response:', response);
     return response.data;
   } catch (error) {
+    console.error('Get vaults error:', error);
     throw error;
   }
 };
@@ -107,9 +110,12 @@ export const deleteVaultContent = async (vaultId, contentId) => {
 // Collaboration Management
 export const sendCollaborationInvite = async (vaultId, email) => {
   try {
+    console.log('Sending collaboration invite for vault:', vaultId, 'to email:', email);
     const response = await api.post(`/vaults/${vaultId}/collaboration-requests`, { email });
+    console.log('Send collaboration invite response:', response);
     return response.data;
   } catch (error) {
+    console.error('Send collaboration invite error:', error);
     throw error;
   }
 };
@@ -143,18 +149,36 @@ export const updateCollaboratorRole = async (vaultId, collaboratorId, role) => {
 
 export const getCollaborationRequests = async () => {
   try {
-    const response = await api.get('/vaults/collaboration-requests');
+    console.log('Fetching collaboration requests...');
+    const response = await api.get('/collaboration-requests');
+    console.log('Collaboration requests response:', response);
     return response.data;
   } catch (error) {
+    console.error('Get collaboration requests error:', error);
     throw error;
   }
 };
 
 export const acceptInviteByToken = async (token) => {
   try {
-    const response = await api.post('/vaults/collaboration-requests/accept', { token });
+    console.log('Accepting invitation with token:', token);
+    const response = await api.post('/collaboration-requests/accept', { token });
+    console.log('Accept invitation response:', response);
     return response.data;
   } catch (error) {
+    console.error('Accept invitation error:', error);
+    throw error;
+  }
+};
+
+export const rejectInviteByToken = async (token) => {
+  try {
+    console.log('Rejecting invitation with token:', token);
+    const response = await api.post('/collaboration-requests/reject', { token });
+    console.log('Reject invitation response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Reject invitation error:', error);
     throw error;
   }
 };
@@ -176,6 +200,18 @@ export const getVaultStats = async (vaultId) => {
     const response = await api.get(`/vaults/${vaultId}/stats`);
     return response.data;
   } catch (error) {
+    throw error;
+  }
+};
+
+export const getCollaboratedVaults = async () => {
+  try {
+    console.log('Fetching collaborated vaults...');
+    const response = await api.get('/vaults/collaborated');
+    console.log('Collaborated vaults response:', response);
+    return response.data;
+  } catch (error) {
+    console.error('Get collaborated vaults error:', error);
     throw error;
   }
 }; 

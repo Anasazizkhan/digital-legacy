@@ -37,4 +37,172 @@
     border: 1px solid #f87171;
     padding: 1rem;
     border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.error-section {
+    margin-top: 1rem;
+}
+
+.processing-section {
+    margin-top: 1rem;
+}
+
+.success-section {
+    margin-top: 1rem;
+}
+
+.rejection-section {
+    margin-top: 1rem;
+}
+
+.success-message {
+    color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid #10b981;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.rejection-message {
+    color: #f59e0b !important;
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid #f59e0b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.redirect-info {
+    color: #60a5fa !important;
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #334155;
+    border-top: 4px solid #60a5fa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Invitation Actions */
+.invitation-actions {
+    margin-top: 2rem;
+}
+
+.invitation-info {
+    margin-bottom: 2rem;
+}
+
+.invitation-info p {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.invitation-details {
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+    font-style: italic;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.accept-invitation-btn,
+.reject-invitation-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 160px;
+    justify-content: center;
+}
+
+.accept-invitation-btn {
+    background: linear-gradient(to right, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.accept-invitation-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(to right, #059669, #047857);
+}
+
+.reject-invitation-btn {
+    background: linear-gradient(to right, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+}
+
+.reject-invitation-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+    background: linear-gradient(to right, #dc2626, #b91c1c);
+}
+
+.accept-invitation-btn:disabled,
+.reject-invitation-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.accept-invitation-btn svg,
+.reject-invitation-btn svg {
+    font-size: 1.1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .accept-collaboration-container {
+        padding: 1rem;
+    }
+    
+    .status-card {
+        padding: 2rem;
+    }
+    
+    .status-card h1 {
+        font-size: 1.5rem;
+    }
+    
+    .status-card p {
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .accept-invitation-btn,
+    .reject-invitation-btn {
+        width: 100%;
+        max-width: 280px;
+    }
 } 

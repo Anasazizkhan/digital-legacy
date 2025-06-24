@@ -11,8 +11,11 @@ const Vault = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [vaults, setVaults] = useState([]);
+  const [collaboratedVaults, setCollaboratedVaults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [collaboratedLoading, setCollaboratedLoading] = useState(true);
   const [error, setError] = useState('');
+  const [collaboratedError, setCollaboratedError] = useState('');
   const [backendError, setBackendError] = useState(false);
   
   // Upload modal states
@@ -39,15 +42,23 @@ const Vault = () => {
   const [requestsError, setRequestsError] = useState('');
   const [showRequests, setShowRequests] = useState(false);
 
-  // Separate vaults by ownership
-  const personalVaults = vaults.filter(vault => vault.ownerEmail === currentUser?.email);
-  const collaboratedVaults = vaults.filter(vault => vault.ownerEmail !== currentUser?.email);
+  // Separate vaults by ownership using the new API response format
+  const personalVaults = vaults.filter(vault => 
+    vault.userRole === 'owner' || vault.ownerEmail === currentUser?.email
+  );
 
   // Debug logging
   console.log('Current user email:', currentUser?.email);
-  console.log('All vaults:', vaults);
-  console.log('Personal vaults:', personalVaults);
+  console.log('Personal vaults:', vaults);
   console.log('Collaborated vaults:', collaboratedVaults);
+  console.log('Collaborated vaults with details:', collaboratedVaults.map(vault => ({
+    id: vault.id,
+    name: vault.name,
+    ownerEmail: vault.ownerEmail,
+    userRole: vault.userRole,
+    collaboratorInfo: vault.collaboratorInfo,
+    settings: vault.settings
+  })));
 
   useEffect(() => {
     AOS.init({
@@ -62,9 +73,11 @@ const Vault = () => {
     if (currentUser) {
       console.log('Loading vault data for user:', currentUser.email);
       loadVaults();
+      loadCollaboratedVaults();
     } else {
       console.log('No currentUser, not loading vault data');
       setLoading(false);
+      setCollaboratedLoading(false);
     }
   }, [currentUser]);
 
@@ -82,11 +95,23 @@ const Vault = () => {
       if (response.success) {
         // Handle different possible response structures
         const vaultsData = response.data || response.vaults || [];
-        setVaults(Array.isArray(vaultsData) ? vaultsData : []);
+        console.log('Processing vaults data:', vaultsData);
+        
+        // Process vaults to separate personal and collaborated vaults
+        const processedVaults = vaultsData.map(vault => ({
+          ...vault,
+          // Ensure we have the required fields
+          ownerEmail: vault.ownerEmail || vault.ownerId,
+          access: vault.access || 'private',
+          fileCount: vault.fileCount || 0,
+          size: vault.size || '0 MB'
+        }));
+        
+        setVaults(processedVaults);
         
         // Load content for each vault
-        if (vaultsData.length > 0) {
-          await loadVaultContent(vaultsData);
+        if (processedVaults.length > 0) {
+          await loadVaultContent(processedVaults);
         }
       } else {
         setError(response.message || 'Failed to load vaults');
@@ -122,6 +147,79 @@ const Vault = () => {
       setVaults([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCollaboratedVaults = async () => {
+    try {
+      setCollaboratedLoading(true);
+      setCollaboratedError('');
+      
+      console.log('Making API call to fetch collaborated vaults...');
+      const response = await vaultService.getCollaboratedVaults();
+      
+      console.log('Collaborated vaults API response:', response);
+      
+      if (response.success) {
+        const collaboratedData = response.data || [];
+        console.log('Processing collaborated vaults data:', collaboratedData);
+        
+        // Process collaborated vaults with the new response structure
+        const processedCollaboratedVaults = collaboratedData.map(vault => ({
+          ...vault,
+          // Ensure we have the required fields with fallbacks
+          ownerEmail: vault.ownerEmail || vault.ownerId,
+          access: vault.access || 'collaborative',
+          fileCount: vault.fileCount || 0,
+          size: vault.size || '0 MB',
+          // Add userRole based on collaborators array
+          userRole: vault.collaborators?.find(collab => collab.email === currentUser?.email)?.role || 'collaborator',
+          isCollaborated: true,
+          // Extract collaborator info for current user
+          collaboratorInfo: vault.collaborators?.find(collab => collab.email === currentUser?.email),
+          // Ensure settings exist
+          settings: vault.settings || {
+            allowFileUploads: true,
+            allowedFileTypes: ['*/*'],
+            maxFileSize: 104857600
+          }
+        }));
+        
+        console.log('Processed collaborated vaults:', processedCollaboratedVaults);
+        setCollaboratedVaults(processedCollaboratedVaults);
+        
+        // Load content for collaborated vaults
+        if (processedCollaboratedVaults.length > 0) {
+          await loadVaultContent(processedCollaboratedVaults);
+        }
+      } else {
+        setCollaboratedError(response.message || 'Failed to load collaborated vaults');
+        setCollaboratedVaults([]);
+      }
+    } catch (error) {
+      console.error('Failed to load collaborated vaults:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response,
+        request: error.request
+      });
+      
+      let errorMessage = 'An error occurred while fetching collaborated vaults.';
+      
+      if (error.response) {
+        const errorData = error.response.data;
+        errorMessage = errorData.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = 'Network error: Unable to connect to server. Please check your connection.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+      
+      setCollaboratedError(errorMessage);
+      setCollaboratedVaults([]);
+    } finally {
+      setCollaboratedLoading(false);
     }
   };
 
@@ -183,6 +281,7 @@ const Vault = () => {
 
   const handleRefresh = () => {
     loadVaults();
+    loadCollaboratedVaults();
   };
 
   const handleUploadClick = (vault) => {
@@ -292,17 +391,52 @@ const Vault = () => {
 
     setRequestsLoading(true);
     setRequestsError('');
+    
+    // Debug authentication status
+    console.log('Loading collaboration requests for user:', currentUser?.email);
+    console.log('Current user object:', currentUser);
+    console.log('Auth token in localStorage:', localStorage.getItem('authToken'));
+    
     try {
+      console.log('Loading collaboration requests...');
       const response = await vaultService.getCollaborationRequests();
+      console.log('Collaboration requests response:', response);
+      
       if (response.success) {
-        setCollaborationRequests(response.data || []);
+        const requests = response.data || [];
+        console.log('Setting collaboration requests:', requests);
+        setCollaborationRequests(requests);
       } else {
-        setRequestsError(response.message || 'Failed to load requests.');
+        const errorMsg = response.message || 'Failed to load requests.';
+        console.error('Collaboration requests failed:', errorMsg);
+        setRequestsError(errorMsg);
         setCollaborationRequests([]);
       }
     } catch (error) {
       console.error('Failed to load collaboration requests:', error);
-      setRequestsError(error.response?.data?.message || 'An error occurred while fetching requests.');
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response,
+        request: error.request
+      });
+      
+      let errorMessage = 'An error occurred while fetching requests.';
+      
+      if (error.response) {
+        // Server responded with error status
+        const errorData = error.response.data;
+        errorMessage = errorData.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Network error: Unable to connect to server. Please check your connection.';
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage = 'Backend server is not running. Please start the backend server.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+      
+      setRequestsError(errorMessage);
       setCollaborationRequests([]);
     } finally {
       setRequestsLoading(false);
@@ -316,12 +450,117 @@ const Vault = () => {
 
   const handleAcceptRequest = async (token) => {
     try {
-      await vaultService.acceptInviteByToken(token);
-      loadVaults(); 
-      loadCollaborationRequests();
+      console.log('Accepting collaboration request with token:', token);
+      
+      // Show loading state
+      setRequestsError('');
+      
+      const response = await vaultService.acceptInviteByToken(token);
+      
+      if (response.success) {
+        console.log('Successfully accepted collaboration request');
+        
+        // Refresh both vaults and requests
+        await loadVaults();
+        await loadCollaboratedVaults();
+        await loadCollaborationRequests();
+        
+        // Show success message temporarily
+        setRequestsError('');
+        setTimeout(() => {
+          // Success message will be cleared when requests are reloaded
+        }, 2000);
+      } else {
+        console.error('Failed to accept request:', response.message);
+        setRequestsError(response.message || 'Failed to accept request. Please try again.');
+      }
     } catch (error) {
       console.error('Failed to accept request:', error);
-      setRequestsError('Failed to accept request. Please try again.');
+      
+      let errorMessage = 'Failed to accept request. Please try again.';
+      
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        
+        switch (status) {
+          case 404:
+            errorMessage = 'Collaboration request not found or invalid. The invitation may have expired.';
+            break;
+          case 400:
+            errorMessage = 'Request already processed. This invitation has already been accepted or declined.';
+            break;
+          case 401:
+            errorMessage = 'Authentication failed. Please log in again and try accepting the invitation.';
+            break;
+          case 403:
+            errorMessage = 'Access denied. You may not have permission to accept this invitation.';
+            break;
+          default:
+            errorMessage = errorData?.message || 'Failed to accept request. Please try again.';
+        }
+      } else if (error.request) {
+        errorMessage = 'Network error: Unable to connect to server. Please check your connection.';
+      }
+      
+      setRequestsError(errorMessage);
+    }
+  };
+
+  const handleRejectRequest = async (token) => {
+    try {
+      console.log('Rejecting collaboration request with token:', token);
+      
+      // Show loading state
+      setRequestsError('');
+      
+      const response = await vaultService.rejectInviteByToken(token);
+      
+      if (response.success) {
+        console.log('Successfully rejected collaboration request');
+        
+        // Refresh requests list
+        await loadCollaborationRequests();
+        
+        // Show success message temporarily
+        setRequestsError('');
+        setTimeout(() => {
+          // Success message will be cleared when requests are reloaded
+        }, 2000);
+      } else {
+        console.error('Failed to reject request:', response.message);
+        setRequestsError(response.message || 'Failed to reject request. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to reject request:', error);
+      
+      let errorMessage = 'Failed to reject request. Please try again.';
+      
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        
+        switch (status) {
+          case 404:
+            errorMessage = 'Collaboration request not found or invalid. The invitation may have expired.';
+            break;
+          case 400:
+            errorMessage = 'Request already processed. This invitation has already been accepted or declined.';
+            break;
+          case 401:
+            errorMessage = 'Authentication failed. Please log in again and try rejecting the invitation.';
+            break;
+          case 403:
+            errorMessage = 'Access denied. You may not have permission to reject this invitation.';
+            break;
+          default:
+            errorMessage = errorData?.message || 'Failed to reject request. Please try again.';
+        }
+      } else if (error.request) {
+        errorMessage = 'Network error: Unable to connect to server. Please check your connection.';
+      }
+      
+      setRequestsError(errorMessage);
     }
   };
 
@@ -361,25 +600,59 @@ const Vault = () => {
           {showRequests && (
             <div className="collaboration-requests-section" data-aos="fade-down">
               <h2>Pending Collaboration Requests</h2>
-              {requestsLoading && <p>Loading requests...</p>}
-              {requestsError && <p className="error-message">{requestsError}</p>}
+              {requestsLoading && (
+                <div className="loading-container">
+                  <div className="loading-spinner"></div>
+                  <p>Loading collaboration requests...</p>
+                </div>
+              )}
+              {requestsError && (
+                <div className="error-message">
+                  <FaExclamationTriangle />
+                  <span>{requestsError}</span>
+                </div>
+              )}
               {!requestsLoading && !requestsError && (
                 collaborationRequests.length > 0 ? (
                   <div className="requests-list">
                     {collaborationRequests.map(request => (
                       <div key={request.id} className="request-card">
                         <div className="request-info">
-                          <p><strong>Vault:</strong> {request.vaultName}</p>
-                          <p><strong>From:</strong> {request.fromUserEmail}</p>
+                          <div className="request-header">
+                            <h4>{request.vaultName}</h4>
+                            <span className="request-status pending">Pending</span>
+                          </div>
+                          <div className="request-details">
+                            <p><strong>From:</strong> {request.fromUserEmail}</p>
+                            <p><strong>Request ID:</strong> {request.id}</p>
+                            <p><strong>Created:</strong> {formatTimestamp(request.createdAt)}</p>
+                          </div>
                         </div>
                         <div className="request-actions">
-                          <button onClick={() => handleAcceptRequest(request.invitationToken)} className="accept-btn">Accept</button>
+                          <button 
+                            onClick={() => handleAcceptRequest(request.invitationToken)} 
+                            className="accept-btn"
+                            title="Accept this collaboration request"
+                          >
+                            Accept Invitation
+                          </button>
+                          <button 
+                            onClick={() => handleRejectRequest(request.invitationToken)} 
+                            className="reject-btn"
+                            title="Reject this collaboration request"
+                          >
+                            Reject Invitation
+                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p>You have no pending collaboration requests.</p>
+                  <div className="no-requests-message">
+                    <FaEnvelope className="no-requests-icon" />
+                    <p>You have no pending collaboration requests.</p>
+                    <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
+                  </div>
                 )
               )}
             </div>
@@ -528,90 +801,155 @@ const Vault = () => {
                 <h2>Collaborated Vaults</h2>
                 <p>Vaults that have been shared with you.</p>
               </div>
-              <Link to="/collaboration-requests" className="check-requests-btn">
-                <FaEnvelope /> View Pending Requests
-              </Link>
+              <button onClick={toggleRequestsSection} className="check-requests-btn">
+                <FaEnvelope /> 
+                {showRequests ? 'Hide Requests' : 'View Requests'}
+              </button>
             </div>
-            {collaboratedVaults.length > 0 ? (
-              <div className="vault-list-container">{collaboratedVaults.map((vault, index) => (
-                <div key={vault.id} className="vault-card collaborated" data-aos="fade-up" data-aos-delay={100 * index}>
-                  <div className="vault-card-header">
-                    <FaFolder className="vault-icon" />
-                    <h2 className="vault-name">{vault.name}</h2>
-                    <span className="collaborator-badge">Collaborator</span>
-                  </div>
-                  <p className="vault-description">{vault.description}</p>
-                  
-                  {/* Vault Content Display */}
-                  {vaultContent[vault.id] && vaultContent[vault.id].length > 0 && (
-                    <div className="vault-content-preview">
-                      <h4>Recent Content</h4>
-                      <div className="content-collage">
-                        {vaultContent[vault.id].slice(0, 6).map((item, itemIndex) => (
-                          <div key={item.id || itemIndex} className="content-item">
-                            {isImageFile(item.fileType || item.type) ? (
-                              <div className="image-item">
-                                <img 
-                                  src={item.url || item.fileUrl} 
-                                  alt={item.description || item.name}
-                                  className="content-image"
-                                />
-                                <div className="content-caption">
-                                  <p className="caption-text">{item.description || item.name}</p>
-                                  <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="file-item">
-                                <div className="file-icon">📄</div>
-                                <div className="content-caption">
-                                  <p className="caption-text">{item.name || item.description}</p>
-                                  <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
-                                  <p className="file-size">{formatFileSize(item.size || 0)}</p>
-          </div>
-        </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      {vaultContent[vault.id].length > 6 && (
-                        <p className="more-content">+{vaultContent[vault.id].length - 6} more items</p>
-                      )}
-      </div>
-                  )}
-                  
-                  <div className="vault-meta">
-                    <span className={`vault-access ${vault.access.toLowerCase()}`}>
-                      {vault.access === 'private' ? <FaLock /> : <FaUsers />}
-                      {vault.access.charAt(0).toUpperCase() + vault.access.slice(1)}
-                    </span>
-                    <span className="vault-file-count">{vault.fileCount || 0} files</span>
-                    <span className="vault-size">{vault.size || '0 MB'}</span>
-                  </div>
-                  <div className="vault-footer">
-                    <span className="vault-owner">Owner: {vault.ownerEmail}</span>
-                    <div className="vault-actions">
-                      <button 
-                        className="upload-files-btn"
-                        onClick={() => handleUploadClick(vault)}
-                        title="Upload Files"
-                      >
-                        <FaUpload />
-                      </button>
-          <button
-                        className="open-vault-btn" 
-                        onClick={() => handleOpenVault(vault.id)}
-                      >
-                        Open Vault
-                      </button>
-                    </div>
+            
+            {collaboratedLoading && (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading collaborated vaults...</p>
+              </div>
+            )}
+            
+            {collaboratedError && !collaboratedLoading && (
+              <div className="error-container" data-aos="fade-up">
+                <div className="error-content">
+                  <FaExclamationTriangle className="error-icon" />
+                  <div className="error-text">
+                    <h3>Error Loading Collaborated Vaults</h3>
+                    <p>{collaboratedError}</p>
+                    <button onClick={handleRefresh} className="retry-btn">
+                      Try Again
+                    </button>
                   </div>
                 </div>
-              ))}</div>
-            ) : (
+              </div>
+            )}
+            
+            {!collaboratedLoading && !collaboratedError && collaboratedVaults.length > 0 && (
+              <div className="vault-list-container">
+                {collaboratedVaults.map((vault, index) => (
+                  <div key={vault.id} className="vault-card collaborated" data-aos="fade-up" data-aos-delay={100 * index}>
+                    <div className="vault-card-header">
+                      <FaFolder className="vault-icon" />
+                      <h2 className="vault-name">{vault.name}</h2>
+                      <div className="collaborator-info">
+                        <span className="collaborator-badge">
+                          {vault.collaboratorInfo?.role || 'Collaborator'}
+                        </span>
+                        {vault.collaboratorInfo?.status && (
+                          <span className={`status-badge ${vault.collaboratorInfo.status}`}>
+                            {vault.collaboratorInfo.status}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="vault-description">{vault.description}</p>
+                    
+                    {/* Collaboration Details */}
+                    {vault.collaboratorInfo && (
+                      <div className="collaboration-details">
+                        <p className="collaboration-info">
+                          <strong>Your Role:</strong> {vault.collaboratorInfo.role}
+                          {vault.collaboratorInfo.addedAt && (
+                            <span className="added-date">
+                              • Added: {formatTimestamp(vault.collaboratorInfo.addedAt)}
+                            </span>
+                          )}
+                        </p>
+                        {vault.settings && (
+                          <div className="vault-settings">
+                            <p className="settings-info">
+                              <strong>Permissions:</strong> 
+                              {vault.settings.allowFileUploads ? ' Upload files' : ' View only'}
+                              {vault.settings.maxFileSize && (
+                                <span> • Max file size: {formatFileSize(vault.settings.maxFileSize)}</span>
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Vault Content Display */}
+                    {vaultContent[vault.id] && vaultContent[vault.id].length > 0 && (
+                      <div className="vault-content-preview">
+                        <h4>Recent Content</h4>
+                        <div className="content-collage">
+                          {vaultContent[vault.id].slice(0, 6).map((item, itemIndex) => (
+                            <div key={item.id || itemIndex} className="content-item">
+                              {isImageFile(item.fileType || item.type) ? (
+                                <div className="image-item">
+                                  <img 
+                                    src={item.url || item.fileUrl} 
+                                    alt={item.description || item.name}
+                                    className="content-image"
+                                  />
+                                  <div className="content-caption">
+                                    <p className="caption-text">{item.description || item.name}</p>
+                                    <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="file-item">
+                                  <div className="file-icon">📄</div>
+                                  <div className="content-caption">
+                                    <p className="caption-text">{item.name || item.description}</p>
+                                    <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
+                                    <p className="file-size">{formatFileSize(item.size || 0)}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {vaultContent[vault.id].length > 6 && (
+                          <p className="more-content">+{vaultContent[vault.id].length - 6} more items</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="vault-meta">
+                      <span className={`vault-access ${vault.access.toLowerCase()}`}>
+                        {vault.access === 'private' ? <FaLock /> : <FaUsers />}
+                        {vault.access.charAt(0).toUpperCase() + vault.access.slice(1)}
+                      </span>
+                      <span className="vault-file-count">{vault.fileCount || 0} files</span>
+                      <span className="vault-size">{vault.size || '0 MB'}</span>
+                    </div>
+                    <div className="vault-footer">
+                      <span className="vault-owner">Owner: {vault.ownerEmail}</span>
+                      <div className="vault-actions">
+                        {vault.settings?.allowFileUploads && (
+                          <button 
+                            className="upload-files-btn"
+                            onClick={() => handleUploadClick(vault)}
+                            title="Upload Files"
+                          >
+                            <FaUpload />
+                          </button>
+                        )}
+                        <button
+                          className="open-vault-btn" 
+                          onClick={() => handleOpenVault(vault.id)}
+                        >
+                          Open Vault
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {!collaboratedLoading && !collaboratedError && collaboratedVaults.length === 0 && (
               <div className="empty-vaults-message">
                 <h3>No collaborated vaults found.</h3>
                 <p>You haven't been added as a collaborator to any vaults yet.</p>
+                <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
               </div>
             )}
           </div>
