@@ -82,9 +82,17 @@ export const uploadToVault = async (vaultId, file, description = '') => {
 
 export const addTextToVault = async (vaultId, textData) => {
   try {
+    console.log('vaultService.addTextToVault called with:', {
+      vaultId,
+      textData
+    });
+    
     const response = await api.post(`/vaults/${vaultId}/text`, textData);
+    
+    console.log('Add text API response:', response);
     return response.data;
   } catch (error) {
+    console.error('vaultService.addTextToVault error:', error);
     throw error;
   }
 };

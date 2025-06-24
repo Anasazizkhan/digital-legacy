@@ -23,6 +23,13 @@ const VaultDetail = () => {
   const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef();
 
+  // Add text modal states
+  const [showAddTextModal, setShowAddTextModal] = useState(false);
+  const [textTitle, setTextTitle] = useState('');
+  const [textContent, setTextContent] = useState('');
+  const [addingText, setAddingText] = useState(false);
+  const [textError, setTextError] = useState('');
+
   useEffect(() => {
     if (vaultId && currentUser) {
       loadVaultData();
@@ -59,14 +66,28 @@ const VaultDetail = () => {
         const files = contentData.data.files || [];
         const notes = contentData.data.notes || [];
         
+        console.log('Processing files:', files);
+        console.log('Processing notes:', notes);
+        
         // Convert notes to content format if needed
-        const notesAsContent = notes.map(note => ({
-          ...note,
-          type: 'text',
-          fileType: 'text/plain',
-          name: note.title || note.content?.substring(0, 50) + '...',
-          description: note.content
-        }));
+        const notesAsContent = notes.map(note => {
+          console.log('Processing note:', note);
+          console.log('Note timestamp fields:', {
+            createdAt: note.createdAt,
+            updatedAt: note.updatedAt,
+            timestamp: note.timestamp,
+            date: note.date,
+            uploadedAt: note.uploadedAt
+          });
+          
+          return {
+            ...note,
+            type: 'text',
+            fileType: 'text/plain',
+            name: note.title || note.content?.substring(0, 50) + '...',
+            description: note.content
+          };
+        });
         
         contentArray = [...files, ...notesAsContent];
       } else {
@@ -74,6 +95,7 @@ const VaultDetail = () => {
         contentArray = contentData?.data || contentData?.content || contentData || [];
       }
       
+      console.log('Final content array:', contentArray);
       setContent(Array.isArray(contentArray) ? contentArray : []);
     } catch (error) {
       console.error('Failed to load vault data:', error);
@@ -144,6 +166,69 @@ const VaultDetail = () => {
     }
   };
 
+  const handleAddTextClick = () => {
+    setShowAddTextModal(true);
+    setTextTitle('');
+    setTextContent('');
+    setTextError('');
+  };
+
+  const handleAddText = async () => {
+    if (!textTitle.trim() || !textContent.trim()) {
+      setTextError('Please provide both a title and content for your text note.');
+      return;
+    }
+
+    setAddingText(true);
+    setTextError('');
+
+    try {
+      console.log('Adding text to vault:', vaultId);
+      console.log('Text data:', { title: textTitle, content: textContent });
+
+      const textData = {
+        title: textTitle.trim(),
+        content: textContent.trim(),
+        type: 'text',
+        createdAt: new Date().toISOString(),
+        addedBy: currentUser?.email || currentUser?.displayName || 'Unknown User',
+        userId: currentUser?.uid
+      };
+
+      const result = await vaultService.addTextToVault(vaultId, textData);
+      console.log('Add text result:', result);
+
+      if (result.success) {
+        console.log('Text added successfully, refreshing data...');
+        // Refresh vault data to show new text content
+        await loadVaultData();
+        setShowAddTextModal(false);
+        setTextTitle('');
+        setTextContent('');
+      } else {
+        setTextError(result.message || 'Failed to add text. Please try again.');
+      }
+    } catch (error) {
+      console.error('Add text failed:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        request: error.request
+      });
+      setTextError(error.response?.data?.message || 'Failed to add text. Please try again.');
+    } finally {
+      setAddingText(false);
+    }
+  };
+
+  const closeAddTextModal = () => {
+    setShowAddTextModal(false);
+    setTextTitle('');
+    setTextContent('');
+    setTextError('');
+    setAddingText(false);
+  };
+
   const isImageFile = (fileType) => {
     return fileType && fileType.startsWith('image/');
   };
@@ -162,7 +247,49 @@ const VaultDetail = () => {
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'Unknown date';
-    return new Date(timestamp).toLocaleString();
+    
+    console.log('Formatting timestamp:', timestamp, 'Type:', typeof timestamp);
+    
+    try {
+      // Handle different timestamp formats
+      let date;
+      
+      if (typeof timestamp === 'string') {
+        // Try parsing as ISO string first
+        date = new Date(timestamp);
+      } else if (typeof timestamp === 'number') {
+        // Handle Unix timestamp (seconds or milliseconds)
+        date = new Date(timestamp * (timestamp < 10000000000 ? 1000 : 1));
+      } else if (timestamp instanceof Date) {
+        date = timestamp;
+      } else {
+        console.warn('Unknown timestamp format:', timestamp);
+        return 'Invalid date';
+      }
+      
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date created from timestamp:', timestamp);
+        return 'Invalid date';
+      }
+      
+      // Format the date
+      const formattedDate = date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      console.log('Formatted date:', formattedDate);
+      return formattedDate;
+      
+    } catch (error) {
+      console.error('Error formatting timestamp:', error, 'Timestamp:', timestamp);
+      return 'Invalid date';
+    }
   };
 
   const getFileIcon = (fileType) => {
@@ -209,7 +336,7 @@ const VaultDetail = () => {
         <button className="upload-btn" onClick={handleUploadClick}>
           <FaUpload /> Upload Files
         </button>
-        <button className="add-text-btn">
+        <button className="add-text-btn" onClick={handleAddTextClick}>
           <FaPlus /> Add Text
         </button>
       </div>
@@ -227,46 +354,86 @@ const VaultDetail = () => {
         ) : (
           <div className="content-grid">
             {(content || []).map((item, index) => (
-              <div key={item.id || index} className="content-card">
-                <div className="content-preview">
-                  {isImageFile(item.fileType || item.type) ? (
-                    <img 
-                      src={item.url || item.fileUrl} 
-                      alt={item.description || item.name}
-                      className="content-image"
-                    />
-                  ) : isTextContent(item) ? (
-                    <div className="text-preview">
-                      <FaFileAlt className="text-icon" />
-                      <div className="text-preview-content">
-                        {item.content || item.description || 'Text content'}
+              <div key={item.id || index} className={`content-card ${isTextContent(item) ? 'text-content' : ''}`}>
+                {isTextContent(item) ? (
+                  // Text Content Display
+                  <div className="text-note-display">
+                    <div className="text-note-header">
+                      <div className="text-note-icon">
+                        <FaFileAlt />
+                      </div>
+                      <div className="text-note-meta">
+                        <h4 className="text-note-title">{item.title || item.name || `Note ${index + 1}`}</h4>
+                        <div className="text-note-info">
+                          <span className="text-note-date">
+                            {(() => {
+                              const timestamp = item.createdAt || item.uploadedAt || item.timestamp;
+                              console.log('Text note timestamp for item:', item.title || item.name, 'Timestamp:', timestamp);
+                              return formatTimestamp(timestamp);
+                            })()}
+                          </span>
+                          {item.addedBy && (
+                            <span className="text-note-author">
+                              by {item.addedBy}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="file-preview">
-                      {getFileIcon(item.fileType || item.type)}
+                    <div className="text-note-content">
+                      <p>{item.content || item.description || 'No content available'}</p>
                     </div>
-                  )}
-                </div>
-                <div className="content-info">
-                  <h4>{item.name || item.title || `Item ${index + 1}`}</h4>
-                  {item.description && <p className="content-description">{item.description}</p>}
-                  <div className="content-meta">
-                    <span className="file-size">{formatFileSize(item.size || 0)}</span>
-                    <span className="upload-date">{formatTimestamp(item.uploadedAt || item.timestamp || item.createdAt)}</span>
+                    <div className="text-note-actions">
+                      <button className="action-btn" title="View Full Text">
+                        <FaEye />
+                      </button>
+                      <button className="action-btn" title="Edit Text">
+                        <FaEdit />
+                      </button>
+                      <button className="action-btn delete" title="Delete Text">
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="content-actions">
-                  <button className="action-btn" title="View">
-                    <FaEye />
-                  </button>
-                  <button className="action-btn" title="Download">
-                    <FaDownload />
-                  </button>
-                  <button className="action-btn delete" title="Delete">
-                    <FaTrash />
-                  </button>
-                </div>
+                ) : (
+                  // File Content Display (existing code)
+                  <>
+                    <div className="content-preview">
+                      {isImageFile(item.fileType || item.type) ? (
+                        <img 
+                          src={item.url || item.fileUrl} 
+                          alt={item.description || item.name}
+                          className="content-image"
+                        />
+                      ) : (
+                        <div className="file-preview">
+                          {getFileIcon(item.fileType || item.type)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="content-info">
+                      <h4>{item.name || item.title || `Item ${index + 1}`}</h4>
+                      {item.description && (
+                        <p className="content-description">{item.description}</p>
+                      )}
+                      <div className="content-meta">
+                        <span className="file-size">{formatFileSize(item.size || 0)}</span>
+                        <span className="upload-date">{formatTimestamp(item.uploadedAt || item.timestamp || item.createdAt)}</span>
+                      </div>
+                    </div>
+                    <div className="content-actions">
+                      <button className="action-btn" title="View">
+                        <FaEye />
+                      </button>
+                      <button className="action-btn" title="Download">
+                        <FaDownload />
+                      </button>
+                      <button className="action-btn delete" title="Delete">
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -353,6 +520,69 @@ const VaultDetail = () => {
               >
                 <FaUpload />
                 {uploading ? 'Uploading...' : `Upload ${selectedFiles.length} File${selectedFiles.length !== 1 ? 's' : ''}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Text Modal */}
+      {showAddTextModal && (
+        <div className="modal-overlay">
+          <div className="modal add-text-modal">
+            <div className="modal-header">
+              <h3>Add Text Note to "{vault?.name}"</h3>
+              <button className="close-btn" onClick={closeAddTextModal}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="form-group">
+                <label htmlFor="text-title">Title</label>
+                <input
+                  id="text-title"
+                  value={textTitle}
+                  onChange={(e) => setTextTitle(e.target.value)}
+                  placeholder="Enter the title of your text note..."
+                  disabled={addingText}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="text-content">Content</label>
+                <textarea
+                  id="text-content"
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  placeholder="Enter the content of your text note..."
+                  disabled={addingText}
+                  rows="3"
+                />
+              </div>
+              
+              {textError && (
+                <div className="text-error">
+                  <FaExclamationTriangle />
+                  <span>{textError}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={closeAddTextModal}
+                disabled={addingText}
+              >
+                Cancel
+              </button>
+              <button 
+                className="add-btn"
+                onClick={handleAddText}
+                disabled={addingText || !textTitle.trim() || !textContent.trim()}
+              >
+                Add Text
               </button>
             </div>
           </div>
