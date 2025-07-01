@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createMessage } from '../services/messageService';
 import { sendMessageToCohere } from '../services/claudeService';
-import { FaPaperPlane, FaRobot, FaUser, FaArrowLeft } from 'react-icons/fa';
+import { FaPaperPlane, FaRobot, FaUser, FaArrowLeft, FaPlus } from 'react-icons/fa';
 import MediaUpload from '../components/MediaUpload';
 import api from '../services/api';
 import './CreateMessage.css';
@@ -239,186 +239,163 @@ const CreateMessage = () => {
 
   return (
     <div className="create-message-page">
-      <div className="page-wrapper">
-        <div className="page-container">
-          <div className="content-container">
-            <div className="page-header" data-template={selectedTemplate}>
-              <div className="page-header-content">
-                <h1 className="page-title">{selectedTemplate ? currentTemplate.title : 'Create New Message'}</h1>
-                <p className="page-description">
-                  {selectedTemplate ? templatePlaceholders[selectedTemplate].title : "Enter message title"}
-                </p>
+      <div className="page-header">
+        <h1 className="page-title">{selectedTemplate ? currentTemplate.title : 'Create New Message'}</h1>
+        <p className="page-description">
+          {selectedTemplate ? templatePlaceholders[selectedTemplate].title : "Enter message title"}
+        </p>
+      </div>
+
+      <div className="main-container">
+        <div className="form-section">
+          {currentTemplate && (
+            <div className="prompts-section">
+              <h2>
+                <span>Writing Prompts</span>
+                <span className="template-icon">💭</span>
+              </h2>
+              <div className="prompts-grid">
+                {currentTemplate.prompts.map((prompt, index) => (
+                  <div key={index} className="prompt-card">
+                    {prompt}
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            <div className="message-form-container" data-template={selectedTemplate}>
-              <div className="content-grid">
-                <div className="message-form-section">
-                  {currentTemplate && (
-                    <div className="prompts-section">
-                      <h2>
-                        <span>Writing Prompts</span>
-                        <span className="template-icon">💭</span>
-                      </h2>
-                      <div className="prompts-grid">
-                        {currentTemplate.prompts.map((prompt, index) => (
-                          <div key={index} className="prompt-card">
-                            {prompt}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                      <label htmlFor="title">
-                        <span>📝 Message Title</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="title"
-                        value={messageDetails.title}
-                        onChange={(e) => setMessageDetails({ ...messageDetails, title: e.target.value })}
-                        className="form-input"
-                        required
-                        placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].title : "Enter message title"}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="content">
-                        <span>✍️ Message Content</span>
-                      </label>
-                      <textarea
-                        id="content"
-                        value={messageDetails.content}
-                        onChange={(e) => setMessageDetails({ ...messageDetails, content: e.target.value })}
-                        className="form-textarea"
-                        required
-                        placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].content : "Write your message here..."}
-                      />
-                    </div>
-
-                    <MediaUpload
-                      onMediaUpload={handleMediaUpload}
-                      onMediaRemove={handleMediaRemove}
-                      existingMedia={mediaAttachments}
-                    />
-
-                    <div className="form-group">
-                      <label htmlFor="scheduledDate">
-                        <span>📅 Schedule Date</span>
-                      </label>
-                      <input
-                        type="date"
-                        id="scheduledDate"
-                        value={messageDetails.scheduledDate}
-                        onChange={(e) => setMessageDetails({ ...messageDetails, scheduledDate: e.target.value })}
-                        className="form-input"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="scheduledTime">
-                        <span>⏰ Schedule Time</span>
-                      </label>
-                      <input
-                        type="time"
-                        id="scheduledTime"
-                        value={messageDetails.scheduledTime}
-                        onChange={(e) => setMessageDetails({ ...messageDetails, scheduledTime: e.target.value })}
-                        className="form-input"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="recipientEmail">
-                        <span>📧 Recipient Email</span>
-                      </label>
-                      <input
-                        type="email"
-                        id="recipientEmail"
-                        value={messageDetails.recipientEmail}
-                        onChange={(e) => setMessageDetails({ ...messageDetails, recipientEmail: e.target.value })}
-                        className="form-input"
-                        required
-                        placeholder="Enter recipient's email"
-                      />
-                    </div>
-
-                    {error && (
-                      <div className="error-message">
-                        ⚠️ {error}
-                      </div>
-                    )}
-
-                    <button 
-                      type="submit" 
-                      className="submit-button"
-                      disabled={loading}
-                    >
-                      {loading ? '⏳ Creating...' : `${selectedTemplate ? templateIcons[selectedTemplate] : '✉️'} Create Message`}
-                    </button>
-                  </form>
-                </div>
-
-                <div className="chat-section">
-                  <div className="chat-header">
-                    <FaRobot className="chat-icon" />
-                    <h2>Message Assistant</h2>
-                  </div>
-
-                  <div className="chat-messages">
-                    {chatMessages.map((msg, index) => (
-                      <div
-                        key={index}
-                        className={`chat-message ${msg.sender === 'user' ? 'user' : 'bot'}`}
-                      >
-                        <div className="message-content">
-                          {msg.sender === 'user' ? <FaUser /> : <FaRobot />}
-                          {msg.content}
-                        </div>
-                        <div className="message-timestamp">
-                          {new Date(msg.timestamp).toLocaleTimeString()}
-                        </div>
-                      </div>
-                    ))}
-                    {chatLoading && (
-                      <div className="chat-message bot">
-                        <div className="message-content">
-                          <FaRobot /> Thinking...
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <form onSubmit={handleSendMessage} className="chat-input-form">
-                    <input
-                      type="text"
-                      value={userInput}
-                      onChange={(e) => setUserInput(e.target.value)}
-                      placeholder={selectedTemplate ? `Ask for ${selectedTemplate} writing suggestions...` : "Ask for writing suggestions..."}
-                      disabled={chatLoading}
-                    />
-                    <button type="submit" disabled={chatLoading || !userInput.trim()}>
-                      <FaPaperPlane />
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              <div className="bottom-actions">
-                <button onClick={() => navigate('/message-templates-list')} className="back-button">
-                  <FaArrowLeft /> Back
-                </button>
-              </div>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="title">Message Title</label>
+              <input
+                type="text"
+                id="title"
+                value={messageDetails.title}
+                onChange={(e) => setMessageDetails({ ...messageDetails, title: e.target.value })}
+                className="form-input"
+                required
+                placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].title : "Enter message title"}
+              />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="content">Message Content</label>
+              <textarea
+                id="content"
+                value={messageDetails.content}
+                onChange={(e) => setMessageDetails({ ...messageDetails, content: e.target.value })}
+                className="form-textarea"
+                required
+                placeholder={selectedTemplate ? templatePlaceholders[selectedTemplate].content : "Write your message here..."}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="scheduledDate">Schedule Date</label>
+              <input
+                type="date"
+                id="scheduledDate"
+                value={messageDetails.scheduledDate}
+                onChange={(e) => setMessageDetails({ ...messageDetails, scheduledDate: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="scheduledTime">Schedule Time</label>
+              <input
+                type="time"
+                id="scheduledTime"
+                value={messageDetails.scheduledTime}
+                onChange={(e) => setMessageDetails({ ...messageDetails, scheduledTime: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="recipientEmail">Recipient Email</label>
+              <input
+                type="email"
+                id="recipientEmail"
+                value={messageDetails.recipientEmail}
+                onChange={(e) => setMessageDetails({ ...messageDetails, recipientEmail: e.target.value })}
+                className="form-input"
+                required
+                placeholder="Enter recipient's email"
+              />
+            </div>
+
+            {error && (
+              <div className="error-message">
+                ⚠️ {error}
+              </div>
+            )}
+
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={loading}
+            >
+              {loading ? '⏳ Creating...' : `${selectedTemplate ? templateIcons[selectedTemplate] : '✉️'} Create Message`}
+            </button>
+          </form>
+        </div>
+
+        <div className="chat-section">
+          <div className="chat-header">
+            <FaRobot className="chat-icon" />
+            <h2>Message Assistant</h2>
           </div>
+
+          <div className="chat-messages">
+            {chatMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`chat-message ${msg.sender === 'user' ? 'user' : 'bot'}`}
+              >
+                <div>
+                  {msg.sender === 'user' ? <FaUser /> : <FaRobot />}
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {chatLoading && (
+              <div className="chat-message bot">
+                <div>
+                  <FaRobot /> Thinking...
+                </div>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="chat-input-form">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder={selectedTemplate ? `Ask for ${selectedTemplate} writing suggestions...` : "Ask for writing suggestions..."}
+              disabled={chatLoading}
+            />
+            <button type="submit" disabled={chatLoading || !userInput.trim()}>
+              <FaPaperPlane />
+            </button>
+          </form>
         </div>
       </div>
+
+      {/* Circular Media Button */}
+      <button 
+        className="media-button"
+        onClick={() => {
+          // Handle media upload - you can trigger the MediaUpload component or open a modal
+          console.log('Media upload clicked');
+        }}
+        title="Add Media"
+      >
+        <FaPlus />
+      </button>
     </div>
   );
 };

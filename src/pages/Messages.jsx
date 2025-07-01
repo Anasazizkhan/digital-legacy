@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaEnvelope, FaLock, FaClock, FaEye, FaTrash, FaEdit, FaMicrophone, FaVideo, FaImage, FaFile, FaTimes } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaClock, FaEye, FaTrash, FaEdit, FaMicrophone, FaVideo, FaImage, FaFile, FaTimes, FaSave, FaCalendarAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserMessages, deleteMessage, deleteMessageMedia } from '../services/messageService';
+import { getUserMessages, deleteMessage, deleteMessageMedia, updateMessage } from '../services/messageService';
 import './Messages.css';
 
 const Messages = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [editForm, setEditForm] = useState({
+    subject: '',
+    content: '',
+    scheduledFor: '',
+    recipientEmail: ''
+  });
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -31,12 +38,59 @@ const Messages = () => {
   };
 
   const handleDelete = async (messageId) => {
+    if (!window.confirm('Are you sure you want to delete this message?')) {
+      return;
+    }
+    
     try {
+      console.log('Deleting message:', messageId);
       await deleteMessage(messageId);
       setMessages(messages.filter(msg => msg.id !== messageId));
     } catch (err) {
       setError('Failed to delete message: ' + (err.message || 'Unknown error'));
       console.error('Error deleting message:', err);
+    }
+  };
+
+  const handleEdit = (message) => {
+    setEditingMessage(message);
+    setEditForm({
+      subject: message.title || '',
+      content: message.content || '',
+      scheduledFor: message.scheduledFor ? new Date(message.scheduledFor).toISOString().slice(0, 16) : '',
+      recipientEmail: message.recipientEmail || ''
+    });
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const updateData = {
+        subject: editForm.subject,
+        content: editForm.content,
+        scheduledFor: new Date(editForm.scheduledFor).toISOString(),
+        recipientEmail: editForm.recipientEmail
+      };
+
+      console.log('Updating message:', editingMessage.id, 'with data:', updateData);
+      await updateMessage(editingMessage.id, updateData);
+      
+      // Update the message in the local state
+      setMessages(messages.map(msg => 
+        msg.id === editingMessage.id 
+          ? { ...msg, ...updateData, title: editForm.subject }
+          : msg
+      ));
+      
+      setEditingMessage(null);
+      setEditForm({
+        subject: '',
+        content: '',
+        scheduledFor: '',
+        recipientEmail: ''
+      });
+    } catch (err) {
+      setError('Failed to update message: ' + (err.message || 'Unknown error'));
+      console.error('Error updating message:', err);
     }
   };
 
@@ -203,14 +257,106 @@ const Messages = () => {
               </div>
               <div className="message-actions">
                 <button 
+                  onClick={() => handleEdit(message)}
+                  className="edit-button"
+                  title="Edit message"
+                >
+                  <FaEdit /> Edit
+                </button>
+                <button 
                   onClick={() => handleDelete(message.id)}
                   className="delete-button"
+                  title="Delete message"
                 >
-                  Delete
+                  <FaTrash /> Delete
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingMessage && (
+        <div className="modal-overlay">
+          <div className="edit-modal">
+            <div className="modal-header">
+              <h2>Edit Message</h2>
+              <button 
+                onClick={() => setEditingMessage(null)}
+                className="close-button"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="form-group">
+                <label htmlFor="subject">Subject:</label>
+                <input
+                  type="text"
+                  id="subject"
+                  value={editForm.subject}
+                  onChange={(e) => setEditForm({...editForm, subject: e.target.value})}
+                  placeholder="Message subject"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="content">Content:</label>
+                <textarea
+                  id="content"
+                  value={editForm.content}
+                  onChange={(e) => setEditForm({...editForm, content: e.target.value})}
+                  placeholder="Message content"
+                  rows="4"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="scheduledFor">Scheduled For:</label>
+                <div className="datetime-input">
+                  <FaCalendarAlt className="calendar-icon" />
+                  <input
+                    type="datetime-local"
+                    id="scheduledFor"
+                    value={editForm.scheduledFor}
+                    onChange={(e) => setEditForm({...editForm, scheduledFor: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="recipientEmail">Recipient Email:</label>
+                <input
+                  type="email"
+                  id="recipientEmail"
+                  value={editForm.recipientEmail}
+                  onChange={(e) => setEditForm({...editForm, recipientEmail: e.target.value})}
+                  placeholder="recipient@example.com"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                onClick={() => setEditingMessage(null)}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleUpdate}
+                className="save-button"
+              >
+                <FaSave /> Save Changes
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

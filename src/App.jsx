@@ -13,10 +13,6 @@ import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import Home from './pages/Home';
 import Calendar from './components/Calendar';
-import HowItWorks from './pages/HowItWorks';
-import Features from './pages/Features';
-import Documentation from './pages/Documentation';
-import ApiReference from './pages/ApiReference';
 import Vault from './pages/Vault';
 import CreateVault from './pages/CreateVault';
 import VaultDetail from './pages/VaultDetail';
@@ -83,11 +79,6 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/docs" element={<Documentation />} />
-              <Route path="/api" element={<ApiReference />} />
               
               {/* OAuth Callback Route - Special handling */}
               <Route path="/oauth-callback" element={<OAuthRoute><Calendar /></OAuthRoute>} />

@@ -87,16 +87,16 @@ const securityFeatures = [
 
 const footerLinks = {
   product: [
-    { name: 'Features', href: '/features' },
-    { name: 'Security', href: '/security' },
-    { name: 'How It Works', href: '/how-it-works' },
-    { name: 'Pricing', href: '/pricing' }
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Vault', href: '/vault' },
+    { name: 'Messages', href: '/messages' },
+    { name: 'Profile', href: '/profile' }
   ],
   resources: [
-    { name: 'Documentation', href: '/docs' },
-    { name: 'API Reference', href: '/api' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Support', href: '/support' }
+    { name: 'Create Message', href: '/create-message' },
+    { name: 'Message Templates', href: '/message-templates' },
+    { name: 'Calendar', href: '/calendar' },
+    { name: 'Create Vault', href: '/vault/create' }
   ],
   company: [
     { name: 'About Us', href: '/about' },

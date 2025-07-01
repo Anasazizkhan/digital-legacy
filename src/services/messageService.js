@@ -1,4 +1,4 @@
-import api from '../config/api';
+import api from './api';
 
 // Upload media file using backend API (recommended approach)
 export const uploadMedia = async (file, mediaType = 'audio') => {
@@ -125,13 +125,17 @@ export const getUserMessages = async () => {
 
 // Update a message
 export const updateMessage = async (messageId, updateData) => {
+  console.log('messageService.updateMessage called with:', { messageId, updateData });
   const response = await api.put(`/messages/${messageId}`, updateData);
+  console.log('messageService.updateMessage response:', response.data);
   return response.data;
 };
 
 // Delete a message
 export const deleteMessage = async (messageId) => {
+  console.log('messageService.deleteMessage called with:', { messageId });
   const response = await api.delete(`/messages/${messageId}`);
+  console.log('messageService.deleteMessage response:', response.data);
   return response.data;
 };
 
