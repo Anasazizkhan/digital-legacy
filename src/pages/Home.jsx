@@ -35,13 +35,6 @@ const features = [
     description: 'Store and protect your most important digital assets with military-grade encryption.',
     image: 'https://images.unsplash.com/photo-1562813733-b31f71025d54?auto=format&fit=crop&w=800&q=80',
     link: '/vault'
-  },
-  {
-    icon: <FaUserFriends className="w-6 h-6" />,
-    title: 'Trusted Contacts',
-    description: 'Designate trusted individuals to manage and distribute your digital legacy.',
-    image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80',
-    link: '/trusted-contacts'
   }
 ];
 
@@ -68,87 +61,7 @@ const howItWorks = [
   }
 ];
 
-const testimonials = [
-  {
-    quote: "This platform gave me peace of mind knowing my digital legacy is secure.",
-    author: "Sarah M.",
-    role: "Business Owner",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "The time-capsule messages feature is incredible. I've prepared messages for my children's future milestones.",
-    author: "Michael R.",
-    role: "Parent",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "The security features are top-notch. I feel confident my sensitive information is protected.",
-    author: "David L.",
-    role: "IT Professional",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "Digital Legacy made it easy to organize my important documents for my family.",
-    author: "Priya S.",
-    role: "Mother & Teacher",
-    image: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "I love the peace of mind knowing my memories are safe and will be delivered.",
-    author: "Carlos G.",
-    role: "Photographer",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "The interface is beautiful and easy to use. Highly recommended!",
-    author: "Emily T.",
-    role: "Designer",
-    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "Setting up my digital legacy was surprisingly simple and quick.",
-    author: "John K.",
-    role: "Retired Engineer",
-    image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "The support team is responsive and very helpful.",
-    author: "Aisha R.",
-    role: "Entrepreneur",
-    image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "I feel secure knowing my wishes will be honored.",
-    author: "Liam P.",
-    role: "Grandparent",
-    image: "https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    quote: "A must-have for anyone who cares about their digital legacy.",
-    author: "Sophia W.",
-    role: "Writer",
-    image: "https://images.unsplash.com/photo-1519340333755-c1aa5571fd46?auto=format&fit=crop&w=150&q=80"
-  }
-];
 
-const faqs = [
-  {
-    question: "How secure is my data?",
-    answer: "We use military-grade encryption and secure cloud storage to protect your data. All information is encrypted end-to-end, and only you and your designated trusted contacts can access it."
-  },
-  {
-    question: "What happens to my digital legacy?",
-    answer: "Your digital assets are securely stored and will be distributed according to your specific instructions and conditions. You have full control over who receives what and when."
-  },
-  {
-    question: "Can I update my legacy plan?",
-    answer: "Yes, you can modify your digital legacy plan at any time. Add new messages, update documents, or change your trusted contacts whenever you need."
-  },
-  {
-    question: "How do time-capsule messages work?",
-    answer: "You can write messages now and schedule them to be delivered to specific people at future dates or after certain conditions are met. Perfect for birthdays, anniversaries, or life milestones."
-  }
-];
 
 const securityFeatures = [
   {
@@ -287,25 +200,7 @@ const Home = () => {
             </div>
           </motion.div>
 
-      {/* Stats Section */}
-      <div className="stats-section">
-        <div className="stat-card">
-          <div className="stat-number">10K+</div>
-          <div className="stat-label">Active Users</div>
-                      </div>
-        <div className="stat-card">
-          <div className="stat-number">50K+</div>
-          <div className="stat-label">Messages Sent</div>
-                      </div>
-        <div className="stat-card">
-          <div className="stat-number">99.9%</div>
-          <div className="stat-label">Uptime</div>
-                    </div>
-        <div className="stat-card">
-          <div className="stat-number">24/7</div>
-          <div className="stat-label">Support</div>
-                    </div>
-                  </div>
+
 
           {/* Security Features Section */}
           <motion.div
@@ -335,80 +230,9 @@ const Home = () => {
             </div>
           </motion.div>
 
-      {/* Testimonials Section */}
-      <div className="testimonials-section">
-        <h2 className="section-title">What Our Users Say</h2>
-        <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ scale: 0.97, rotateZ: 0 }}
-              animate={{
-                scale: [0.97, 1.03, 0.98, 1],
-                rotateZ: [0, 2, -2, 0],
-                boxShadow: [
-                  '0 2px 12px rgba(30,40,60,0.10)',
-                  '0 8px 32px rgba(80,120,255,0.10)',
-                  '0 4px 24px rgba(80,120,255,0.10)',
-                  '0 2px 12px rgba(30,40,60,0.10)'
-                ]
-              }}
-              transition={{
-                duration: 3.5,
-                delay: -0.3 * index,
-                repeat: Infinity,
-                repeatType: 'mirror',
-                ease: 'easeInOut'
-              }}
-              whileHover={{
-                scale: 1.07,
-                rotateX: 8,
-                rotateY: 8,
-                boxShadow: '0 12px 40px rgba(80,120,255,0.18)'
-              }}
-              className="testimonial-card floating-card"
-            >
-              <p className="testimonial-content">{testimonial.quote}</p>
-              <div className="testimonial-author">
-                <img 
-                  src={testimonial.image} 
-                  alt={testimonial.author} 
-                  className="author-avatar"
-                />
-                <div className="author-info">
-                  <h4>{testimonial.author}</h4>
-                  <p>{testimonial.role}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
 
-          {/* FAQ Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1 }}
-        className="faq-section"
-      >
-        <h2 className="section-title">Frequently Asked Questions</h2>
-        <p className="section-subtitle">Find answers to common questions about our digital legacy platform</p>
-        <div className="faq-grid">
-              {faqs.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="faq-card"
-                >
-              <h3>{faq.question}</h3>
-              <p>{faq.answer}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+
+
 
           {/* Enhanced CTA Section */}
           <motion.div
