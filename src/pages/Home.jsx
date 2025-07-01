@@ -18,7 +18,6 @@ import {
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ChatBot from '../components/ChatBot';
 import './Home.css';
 
 const features = [
@@ -202,33 +201,7 @@ const Home = () => {
 
 
 
-          {/* Security Features Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-        className="security-section"
-          >
-        <h2 className="section-title">Bank-Grade Security</h2>
-        <p className="section-subtitle">
-                Your digital legacy deserves the highest level of protection. Our platform employs multiple layers of security to keep your data safe.
-              </p>
-        <div className="security-grid">
-              {securityFeatures.map((feature, index) => (
-                <motion.div
-              key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="security-card"
-                >
-              <div className="security-icon">{feature.icon}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+
 
 
 
@@ -364,8 +337,7 @@ const Home = () => {
             </div>
           </footer>
 
-      {/* Add ChatBot component */}
-      <ChatBot />
+      
     </div>
   );
 };
