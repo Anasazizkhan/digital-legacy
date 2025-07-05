@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaShieldAlt, FaBell, FaExclamationCircle, FaSignOutAlt, FaCheckCircle, FaCamera } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import BackButton from '../components/BackButton';
+import { sendVerificationEmail, verifyEmail } from '../services/userService';
 import './Profile.css';
 
 const Profile = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +29,9 @@ const Profile = () => {
       inApp: true
     }
   });
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -47,6 +52,7 @@ const Profile = () => {
             notificationPreferences: userData.notificationPreferences || prevProfile.notificationPreferences,
             twoFactorEnabled: userData.twoFactorEnabled || false
           }));
+          setEmailVerified(userData.emailVerified || false);
         } else {
           // If no profile exists, create one with auth data
           const newProfile = {
@@ -171,6 +177,19 @@ const Profile = () => {
     }
   };
 
+  const handleSendVerification = async () => {
+    setVerifying(true);
+    setVerificationMessage('');
+    try {
+      await sendVerificationEmail(profile.email);
+      setVerificationMessage('Verification email sent! Please check your inbox.');
+    } catch (err) {
+      setVerificationMessage(err.response?.data?.message || 'Failed to send verification email.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-page">
@@ -284,10 +303,20 @@ const Profile = () => {
                     disabled
                     className="form-input"
                   />
-                  <span className="status-badge status-verified">
-                    Verified
-                  </span>
+                  {emailVerified ? (
+                    <span className="status-badge status-verified"><FaCheckCircle color="green" /> Verified</span>
+                  ) : (
+                    <button
+                      onClick={handleSendVerification}
+                      disabled={verifying}
+                      className="verify-email-btn"
+                      style={{ backgroundColor: '#e53e3e', color: 'white', border: 'none', borderRadius: '4px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {verifying ? 'Sending...' : (<><FaExclamationCircle color="white" /> Verify</>)}
+                    </button>
+                  )}
                 </div>
+                {verificationMessage && <div className="verification-message">{verificationMessage}</div>}
               </div>
 
               <div className="form-group">

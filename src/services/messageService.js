@@ -139,17 +139,6 @@ export const deleteMessage = async (messageId) => {
   return response.data;
 };
 
-// Delete specific media from a message
-export const deleteMessageMedia = async (messageId, mediaType, fileName) => {
-  try {
-    const response = await api.delete(`/messages/${messageId}/media/${mediaType}/${fileName}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting message media:', error);
-    throw new Error(`Failed to delete message media: ${error.message}`);
-  }
-};
-
 // Get messages by status
 export const getMessagesByStatus = async (status) => {
   const response = await api.get(`/messages/status/${status}`);

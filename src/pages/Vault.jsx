@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaFolder, FaUsers, FaLock, FaPlus, FaExclamationTriangle, FaUpload, FaTimes, FaUserPlus, FaEnvelope } from 'react-icons/fa';
+import { FaFolder, FaUsers, FaLock, FaPlus, FaExclamationTriangle, FaUpload, FaTimes, FaUserPlus, FaEnvelope, FaEye, FaDownload, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import * as vaultService from '../services/vaultService';
 import AOS from 'aos';
@@ -566,6 +566,59 @@ const Vault = () => {
 
   const toggleRequestsSection = () => setShowRequests(prev => !prev);
 
+  // Add deleteVault function
+  const deleteVault = async (vaultId) => {
+    if (!window.confirm('Are you sure you want to delete this vault? This action cannot be undone.')) return;
+    try {
+      const response = await vaultService.deleteVault(vaultId);
+      if (response.success) {
+        alert('Vault deleted successfully!');
+        await loadVaults();
+      } else {
+        alert('Failed to delete vault: ' + (response.message || 'Unknown error'));
+      }
+    } catch (error) {
+      alert('Error deleting vault: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  // Clean handler for preview
+  const handlePreview = (item) => {
+    if (!item.url && !item.fileUrl) {
+      alert('No preview available for this file.');
+      return;
+    }
+    window.open(item.url || item.fileUrl, '_blank');
+  };
+
+  // Clean handler for download
+  const handleDownload = (item) => {
+    if (!item.url && !item.fileUrl) {
+      alert('No download available for this file.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = item.url || item.fileUrl;
+    link.download = item.name || 'file';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Clean handler for delete
+  const handleDelete = async (item, vaultId) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    try {
+      await vaultService.deleteVaultContent(vaultId, item.id);
+      alert('File deleted!');
+      // Refresh content for this vault only
+      const contentResponse = await vaultService.getVaultContent(vaultId);
+      setVaultContent(prev => ({ ...prev, [vaultId]: contentResponse.data || contentResponse.content || [] }));
+    } catch (error) {
+      alert('Failed to delete file: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   if (loading) {
     return (
       <div className="vault-page">
@@ -578,249 +631,112 @@ const Vault = () => {
   }
 
   return (
-    <div className="vault-container" data-aos="fade-up">
-      {!loading && !error && !backendError && (
-        <>
-          <div className="vault-header" data-aos="fade-down">
-            <h1>My Vaults</h1>
-            <p className="vault-subtitle">
-              Securely organize, store, and share your most important digital assets.
-            </p>
-            <div className="vault-actions">
-              <button className="create-vault-btn" onClick={handleCreateVault}>
-                <FaPlus /> Create New Vault
-              </button>
-              <button onClick={toggleRequestsSection} className="collab-requests-btn">
-                <FaEnvelope /> 
-                {showRequests ? 'Hide Requests' : 'View Requests'}
-              </button>
-            </div>
-          </div>
-
-          {showRequests && (
-            <div className="collaboration-requests-section" data-aos="fade-down">
-              <h2>Pending Collaboration Requests</h2>
-              {requestsLoading && (
-                <div className="loading-container">
-                  <div className="loading-spinner"></div>
-                  <p>Loading collaboration requests...</p>
-                </div>
-              )}
-              {requestsError && (
-                <div className="error-message">
-                  <FaExclamationTriangle />
-                  <span>{requestsError}</span>
-                </div>
-              )}
-              {!requestsLoading && !requestsError && (
-                collaborationRequests.length > 0 ? (
-                  <div className="requests-list">
-                    {collaborationRequests.map(request => (
-                      <div key={request.id} className="request-card">
-                        <div className="request-info">
-                          <div className="request-header">
-                            <h4>{request.vaultName}</h4>
-                            <span className="request-status pending">Pending</span>
-                          </div>
-                          <div className="request-details">
-                            <p><strong>From:</strong> {request.fromUserEmail}</p>
-                            <p><strong>Request ID:</strong> {request.id}</p>
-                            <p><strong>Created:</strong> {formatTimestamp(request.createdAt)}</p>
-                          </div>
-                        </div>
-                        <div className="request-actions">
-                          <button 
-                            onClick={() => handleAcceptRequest(request.invitationToken)} 
-                            className="accept-btn"
-                            title="Accept this collaboration request"
-                          >
-                            Accept Invitation
-                          </button>
-                          <button 
-                            onClick={() => handleRejectRequest(request.invitationToken)} 
-                            className="reject-btn"
-                            title="Reject this collaboration request"
-                          >
-                            Reject Invitation
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-requests-message">
-                    <FaEnvelope className="no-requests-icon" />
-                    <p>You have no pending collaboration requests.</p>
-                    <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-
-      {/* Backend Error Message */}
-      {backendError && (
-            <div className="error-container" data-aos="fade-up">
-          <div className="error-content">
-            <FaExclamationTriangle className="error-icon" />
-            <div className="error-text">
-              <h3>Backend Connection Error</h3>
-              <p>The backend server is not running. Please start the backend server to use the Vault features.</p>
-              <p className="error-details">Error: Connection refused to http://localhost:5000</p>
-                  <button onClick={handleRefresh} className="retry-btn">
-                    Retry Connection
-                  </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-          {/* General Error Message */}
-          {error && !backendError && (
-            <div className="error-container" data-aos="fade-up">
-              <div className="error-content">
-                <FaExclamationTriangle className="error-icon" />
-                <div className="error-text">
-                  <h3>Error Loading Vaults</h3>
-                  <p>{error}</p>
-                  <button onClick={handleRefresh} className="retry-btn">
-                    Try Again
-                  </button>
-                </div>
+    <>
+      <div className="vault-container" data-aos="fade-up">
+        {!loading && !error && !backendError && (
+          <>
+            <div className="vault-header" data-aos="fade-down">
+              <h1>My Vaults</h1>
+              <p className="vault-subtitle">
+                Securely organize, store, and share your most important digital assets.
+              </p>
+              <div className="vault-actions">
+                <button className="create-vault-btn" onClick={handleCreateVault}>
+                  <FaPlus /> Create New Vault
+                </button>
+                <button onClick={toggleRequestsSection} className="collab-requests-btn">
+                  <FaEnvelope /> 
+                  {showRequests ? 'Hide Requests' : 'View Requests'}
+                </button>
               </div>
             </div>
-          )}
 
-          {/* Personal Vaults Section */}
-          <div className="vault-section" data-aos="fade-up" data-aos-delay="200">
-            <div className="section-header">
-              <h2>Personal Vaults</h2>
-              <p>Vaults you own and manage</p>
-            </div>
-            
-            <div className="vault-list-container">
-              {personalVaults.map((vault, index) => (
-                <div key={vault.id} className="vault-card" data-aos="fade-up" data-aos-delay={100 * index}>
-                  <div className="vault-card-header">
-                    <FaFolder className="vault-icon" />
-                    <h2 className="vault-name">{vault.name}</h2>
+            {showRequests && (
+              <div className="collaboration-requests-section" data-aos="fade-down">
+                <h2>Pending Collaboration Requests</h2>
+                {requestsLoading && (
+                  <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading collaboration requests...</p>
                   </div>
-                  <p className="vault-description">{vault.description}</p>
-                  
-                  {/* Vault Content Display */}
-                  {vaultContent[vault.id] && vaultContent[vault.id].length > 0 && (
-                    <div className="vault-content-preview">
-                      <h4>Recent Content</h4>
-                      <div className="content-collage">
-                        {vaultContent[vault.id].slice(0, 6).map((item, itemIndex) => (
-                          <div key={item.id || itemIndex} className="content-item">
-                            {isImageFile(item.fileType || item.type) ? (
-                              <div className="image-item">
-                                <img 
-                                  src={item.url || item.fileUrl} 
-                                  alt={item.description || item.name}
-                                  className="content-image"
-                                />
-                                <div className="content-caption">
-                                  <p className="caption-text">{item.description || item.name}</p>
-                                  <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="file-item">
-                                <div className="file-icon">📄</div>
-                                <div className="content-caption">
-                                  <p className="caption-text">{item.name || item.description}</p>
-                                  <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
-                                  <p className="file-size">{formatFileSize(item.size || 0)}</p>
-                                </div>
-                              </div>
-                            )}
+                )}
+                {requestsError && (
+                  <div className="error-message">
+                    <FaExclamationTriangle />
+                    <span>{requestsError}</span>
+                  </div>
+                )}
+                {!requestsLoading && !requestsError && (
+                  collaborationRequests.length > 0 ? (
+                    <div className="requests-list">
+                      {collaborationRequests.map(request => (
+                        <div key={request.id} className="request-card">
+                          <div className="request-info">
+                            <div className="request-header">
+                              <h4>{request.vaultName}</h4>
+                              <span className="request-status pending">Pending</span>
+                            </div>
+                            <div className="request-details">
+                              <p><strong>From:</strong> {request.fromUserEmail}</p>
+                              <p><strong>Request ID:</strong> {request.id}</p>
+                              <p><strong>Created:</strong> {formatTimestamp(request.createdAt)}</p>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                      {vaultContent[vault.id].length > 6 && (
-                        <p className="more-content">+{vaultContent[vault.id].length - 6} more items</p>
-                      )}
+                          <div className="request-actions">
+                            <button 
+                              onClick={() => handleAcceptRequest(request.invitationToken)} 
+                              className="accept-btn"
+                              title="Accept this collaboration request"
+                            >
+                              Accept Invitation
+                            </button>
+                            <button 
+                              onClick={() => handleRejectRequest(request.invitationToken)} 
+                              className="reject-btn"
+                              title="Reject this collaboration request"
+                            >
+                              Reject Invitation
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  
-                  <div className="vault-meta">
-                    <span className={`vault-access ${vault.access.toLowerCase()}`}>
-                      {vault.access === 'private' ? <FaLock /> : <FaUsers />}
-                      {vault.access.charAt(0).toUpperCase() + vault.access.slice(1)}
-                    </span>
-                    <span className="vault-file-count">{vault.fileCount || 0} files</span>
-                    <span className="vault-size">{vault.size || '0 MB'}</span>
-                  </div>
-                  <div className="vault-footer">
-                    <span className="vault-owner">Owner: You</span>
-                    <div className="vault-actions">
-                      <button 
-                        className="add-collaborator-btn"
-                        onClick={() => handleAddCollaborator(vault)}
-                        title="Add Collaborator"
-                      >
-                        <FaUserPlus />
-                        <span className="btn-text">Add Collaborator</span>
-                      </button>
-                      <button 
-                        className="upload-files-btn"
-                        onClick={() => handleUploadClick(vault)}
-                        title="Upload Files"
-                      >
-                        <FaUpload />
-                      </button>
-                      <button 
-                        className="open-vault-btn" 
-                        onClick={() => handleOpenVault(vault.id)}
-                      >
-                        Open Vault
-                      </button>
+                  ) : (
+                    <div className="no-requests-message">
+                      <FaEnvelope className="no-requests-icon" />
+                      <p>You have no pending collaboration requests.</p>
+                      <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
                     </div>
-                  </div>
-                </div>
-              ))}
-
-              {personalVaults.length === 0 && !loading && !error && (
-                <div className="empty-vaults-message">
-                  <h3>No personal vaults found.</h3>
-                  <p>Create your first vault to get started.</p>
-                  <button className="create-first-vault-btn" onClick={handleCreateVault}>
-                    <FaPlus /> Create Your First Vault
-                  </button>
-          </div>
-              )}
-            </div>
-          </div>
-
-          {/* Collaborated Vaults Section */}
-          <div className="vault-section">
-            <div className="section-header">
-              <div className="section-header-text">
-                <h2>Collaborated Vaults</h2>
-                <p>Vaults that have been shared with you.</p>
-              </div>
-              <button onClick={toggleRequestsSection} className="check-requests-btn">
-                <FaEnvelope /> 
-                {showRequests ? 'Hide Requests' : 'View Requests'}
-              </button>
-            </div>
-            
-            {collaboratedLoading && (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <p>Loading collaborated vaults...</p>
+                  )
+                )}
               </div>
             )}
-            
-            {collaboratedError && !collaboratedLoading && (
+
+        {/* Backend Error Message */}
+        {backendError && (
+              <div className="error-container" data-aos="fade-up">
+            <div className="error-content">
+              <FaExclamationTriangle className="error-icon" />
+              <div className="error-text">
+                <h3>Backend Connection Error</h3>
+                <p>The backend server is not running. Please start the backend server to use the Vault features.</p>
+                <p className="error-details">Error: Connection refused to http://localhost:5000</p>
+                    <button onClick={handleRefresh} className="retry-btn">
+                      Retry Connection
+                    </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+            {/* General Error Message */}
+            {error && !backendError && (
               <div className="error-container" data-aos="fade-up">
                 <div className="error-content">
                   <FaExclamationTriangle className="error-icon" />
                   <div className="error-text">
-                    <h3>Error Loading Collaborated Vaults</h3>
-                    <p>{collaboratedError}</p>
+                    <h3>Error Loading Vaults</h3>
+                    <p>{error}</p>
                     <button onClick={handleRefresh} className="retry-btn">
                       Try Again
                     </button>
@@ -828,53 +744,25 @@ const Vault = () => {
                 </div>
               </div>
             )}
-            
-            {!collaboratedLoading && !collaboratedError && collaboratedVaults.length > 0 && (
+
+            {/* Personal Vaults Section */}
+            <div className="vault-section" data-aos="fade-up" data-aos-delay="200">
+              <div className="section-header">
+                <h2>Personal Vaults</h2>
+                <p>Vaults you own and manage</p>
+              </div>
+              
               <div className="vault-list-container">
-                {collaboratedVaults.map((vault, index) => (
-                  <div key={vault.id} className="vault-card collaborated" data-aos="fade-up" data-aos-delay={100 * index}>
+                {personalVaults.map((vault, index) => (
+                  <div key={vault.id} className="vault-card" data-aos="fade-up" data-aos-delay={100 * index}>
                     <div className="vault-card-header">
                       <FaFolder className="vault-icon" />
                       <h2 className="vault-name">{vault.name}</h2>
-                      <div className="collaborator-info">
-                        <span className="collaborator-badge">
-                          {vault.collaboratorInfo?.role || 'Collaborator'}
-                        </span>
-                        {vault.collaboratorInfo?.status && (
-                          <span className={`status-badge ${vault.collaboratorInfo.status}`}>
-                            {vault.collaboratorInfo.status}
-                          </span>
-                        )}
-                      </div>
                     </div>
                     <p className="vault-description">{vault.description}</p>
                     
-                    {/* Collaboration Details */}
-                    {vault.collaboratorInfo && (
-                      <div className="collaboration-details">
-                        <p className="collaboration-info">
-                          <strong>Your Role:</strong> {vault.collaboratorInfo.role}
-                          {vault.collaboratorInfo.addedAt && (
-                            <span className="added-date">
-                              • Added: {formatTimestamp(vault.collaboratorInfo.addedAt)}
-                            </span>
-                          )}
-                        </p>
-                        {vault.settings && (
-                          <div className="vault-settings">
-                            <p className="settings-info">
-                              <strong>Permissions:</strong> 
-                              {vault.settings.allowFileUploads ? ' Upload files' : ' View only'}
-                              {vault.settings.maxFileSize && (
-                                <span> • Max file size: {formatFileSize(vault.settings.maxFileSize)}</span>
-                              )}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
                     {/* Vault Content Display */}
+                    {console.log('vaultContent for vault', vault.id, vaultContent[vault.id])}
                     {vaultContent[vault.id] && vaultContent[vault.id].length > 0 && (
                       <div className="vault-content-preview">
                         <h4>Recent Content</h4>
@@ -903,6 +791,11 @@ const Vault = () => {
                                   </div>
                                 </div>
                               )}
+                              <div className="content-actions-row">
+                                <button onClick={() => handlePreview(item)} style={{marginRight: 8}}>Preview</button>
+                                <button onClick={() => handleDownload(item)} style={{marginRight: 8}}>Download</button>
+                                <button onClick={() => handleDelete(item, vault.id)} style={{color: 'red'}}>Delete</button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -921,178 +814,358 @@ const Vault = () => {
                       <span className="vault-size">{vault.size || '0 MB'}</span>
                     </div>
                     <div className="vault-footer">
-                      <span className="vault-owner">Owner: {vault.ownerEmail}</span>
+                      <span className="vault-owner">Owner: You</span>
                       <div className="vault-actions">
-                        {vault.settings?.allowFileUploads && (
-                          <button 
-                            className="upload-files-btn"
-                            onClick={() => handleUploadClick(vault)}
-                            title="Upload Files"
-                          >
-                            <FaUpload />
-                          </button>
-                        )}
-                        <button
+                        <button 
+                          className="add-collaborator-btn"
+                          onClick={() => handleAddCollaborator(vault)}
+                          title="Add Collaborator"
+                        >
+                          <FaUserPlus />
+                          <span className="btn-text">Add Collaborator</span>
+                        </button>
+                        <button 
+                          className="upload-files-btn"
+                          onClick={() => handleUploadClick(vault)}
+                          title="Upload Files"
+                        >
+                          <FaUpload />
+                        </button>
+                        <button 
                           className="open-vault-btn" 
                           onClick={() => handleOpenVault(vault.id)}
                         >
                           Open Vault
                         </button>
+                        <button 
+                          className="delete-vault-btn"
+                          onClick={() => deleteVault(vault.id)}
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
-            
-            {!collaboratedLoading && !collaboratedError && collaboratedVaults.length === 0 && (
-              <div className="empty-vaults-message">
-                <h3>No collaborated vaults found.</h3>
-                <p>You haven't been added as a collaborator to any vaults yet.</p>
-                <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
 
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="modal-overlay">
-          <div className="modal upload-modal">
-            <div className="modal-header">
-              <h3>Upload Files to "{selectedVault?.name}"</h3>
-              <button className="close-btn" onClick={closeUploadModal}>
-                <FaTimes />
-          </button>
-      </div>
-
-            <div className="modal-content">
-              <div className="file-upload-area">
-            <input
-              type="file"
-              multiple
-              ref={fileInputRef}
-                  onChange={handleFileSelect}
-              disabled={uploading}
-                  style={{ display: 'none' }}
-                />
-                <button 
-                  className="select-files-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  <FaUpload />
-                  {uploading ? 'Uploading...' : 'Select Files'}
-                </button>
-                <p className="upload-hint">Click to select files or drag and drop</p>
-                
-                {selectedFiles.length > 0 && (
-                  <div className="selected-files">
-                    <h4>Selected Files ({selectedFiles.length}):</h4>
-                    <ul>
-                      {selectedFiles.map((file, index) => (
-                        <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
-                      ))}
-                    </ul>
-          </div>
-        )}
-      </div>
-
-              <div className="form-group">
-                <label htmlFor="upload-description">Description (optional)</label>
-                <textarea
-                  id="upload-description"
-                  value={uploadDescription}
-                  onChange={(e) => setUploadDescription(e.target.value)}
-                  placeholder="Add a description for these files..."
-                  disabled={uploading}
-                  rows="3"
-                />
-        </div>
-
-              {uploadError && (
-                <div className="upload-error">
-                  <FaExclamationTriangle />
-                  <span>{uploadError}</span>
-        </div>
-              )}
-        </div>
-
-            <div className="modal-actions">
-          <button 
-                className="cancel-btn"
-                onClick={closeUploadModal}
-                disabled={uploading}
-              >
-                Cancel
-          </button>
-          <button 
-                className="upload-btn"
-                onClick={handleUploadFiles}
-                disabled={uploading || selectedFiles.length === 0}
-              >
-                <FaUpload />
-                {uploading ? 'Uploading...' : 'Upload Files'}
-          </button>
-        </div>
-          </div>
-        </div>
-      )}
-
-      {/* Collaborator Modal */}
-      {showCollaboratorModal && (
-        <div className="modal-overlay">
-          <div className="modal collaborator-modal">
-            <div className="modal-header">
-              <h3>Add Collaborator to "{selectedVault?.name}"</h3>
-              <button className="close-btn" onClick={closeCollaboratorModal}>
-                <FaTimes />
-              </button>
-          </div>
-            
-            <div className="modal-content">
-              <div className="form-group">
-                <label htmlFor="collaborator-email">Collaborator Email</label>
-                <input
-                  type="email"
-                  id="collaborator-email"
-                  value={collaboratorEmail}
-                  onChange={(e) => setCollaboratorEmail(e.target.value)}
-                  placeholder="Enter the collaborator's email"
-                  disabled={sendingInvite}
-                />
-              </div>
-
-              {inviteError && (
-                <div className="invite-error">
-                  <FaExclamationTriangle />
-                  <span>{inviteError}</span>
-                </div>
-              )}
-                </div>
-
-            <div className="modal-actions">
-              <button 
-                className="cancel-btn"
-                onClick={closeCollaboratorModal}
-                disabled={sendingInvite}
-              >
-                Cancel
-                </button>
-              <button 
-                className="send-invite-btn"
-                onClick={handleSendInvite}
-                disabled={sendingInvite || !collaboratorEmail.trim()}
-              >
-                <FaUserPlus />
-                {sendingInvite ? 'Sending...' : 'Send Invitation'}
-                </button>
+                {personalVaults.length === 0 && !loading && !error && (
+                  <div className="empty-vaults-message">
+                    <h3>No personal vaults found.</h3>
+                    <p>Create your first vault to get started.</p>
+                    <button className="create-first-vault-btn" onClick={handleCreateVault}>
+                      <FaPlus /> Create Your First Vault
+                    </button>
+            </div>
+                )}
               </div>
             </div>
-        </div>
+
+            {/* Collaborated Vaults Section */}
+            <div className="vault-section">
+              <div className="section-header">
+                <div className="section-header-text">
+                  <h2>Collaborated Vaults</h2>
+                  <p>Vaults that have been shared with you.</p>
+                </div>
+                <button onClick={toggleRequestsSection} className="check-requests-btn">
+                  <FaEnvelope /> 
+                  {showRequests ? 'Hide Requests' : 'View Requests'}
+                </button>
+              </div>
+              
+              {collaboratedLoading && (
+                <div className="loading-container">
+                  <div className="loading-spinner"></div>
+                  <p>Loading collaborated vaults...</p>
+                </div>
+              )}
+              
+              {collaboratedError && !collaboratedLoading && (
+                <div className="error-container" data-aos="fade-up">
+                  <div className="error-content">
+                    <FaExclamationTriangle className="error-icon" />
+                    <div className="error-text">
+                      <h3>Error Loading Collaborated Vaults</h3>
+                      <p>{collaboratedError}</p>
+                      <button onClick={handleRefresh} className="retry-btn">
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {!collaboratedLoading && !collaboratedError && collaboratedVaults.length > 0 && (
+                <div className="vault-list-container">
+                  {collaboratedVaults.map((vault, index) => (
+                    <div key={vault.id} className="vault-card collaborated" data-aos="fade-up" data-aos-delay={100 * index}>
+                      <div className="vault-card-header">
+                        <FaFolder className="vault-icon" />
+                        <h2 className="vault-name">{vault.name}</h2>
+                        <div className="collaborator-info">
+                          <span className="collaborator-badge">
+                            Collaborator
+                          </span>
+                          {vault.collaboratorInfo?.status && (
+                            <span className={`status-badge ${vault.collaboratorInfo.status}`}>
+                              {vault.collaboratorInfo.status}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="vault-description">{vault.description}</p>
+                      
+                      {/* Collaboration Details */}
+                      {vault.collaboratorInfo && (
+                        <div className="collaboration-details">
+                          <p className="collaboration-info">
+                            <strong>Your Role:</strong> {vault.collaboratorInfo.role}
+                            {vault.collaboratorInfo.addedAt && (
+                              <span className="added-date">
+                                • Added: {formatTimestamp(vault.collaboratorInfo.addedAt)}
+                              </span>
+                            )}
+                          </p>
+                          {vault.settings && (
+                            <div className="vault-settings">
+                              <p className="settings-info">
+                                <strong>Permissions:</strong> 
+                                {vault.settings.allowFileUploads ? ' Upload files' : ' View only'}
+                                {vault.settings.maxFileSize && (
+                                  <span> • Max file size: {formatFileSize(vault.settings.maxFileSize)}</span>
+                                )}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Vault Content Display */}
+                      {console.log('vaultContent for vault', vault.id, vaultContent[vault.id])}
+                      {vaultContent[vault.id] && vaultContent[vault.id].length > 0 && (
+                        <div className="vault-content-preview">
+                          <h4>Recent Content</h4>
+                          <div className="content-collage">
+                            {vaultContent[vault.id].slice(0, 6).map((item, itemIndex) => (
+                              <div key={item.id || itemIndex} className="content-item">
+                                {isImageFile(item.fileType || item.type) ? (
+                                  <div className="image-item">
+                                    <img 
+                                      src={item.url || item.fileUrl} 
+                                      alt={item.description || item.name}
+                                      className="content-image"
+                                    />
+                                    <div className="content-caption">
+                                      <p className="caption-text">{item.description || item.name}</p>
+                                      <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="file-item">
+                                    <div className="file-icon">📄</div>
+                                    <div className="content-caption">
+                                      <p className="caption-text">{item.name || item.description}</p>
+                                      <p className="caption-timestamp">{formatTimestamp(item.uploadedAt || item.timestamp)}</p>
+                                      <p className="file-size">{formatFileSize(item.size || 0)}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="content-actions-row">
+                                  <button onClick={() => handlePreview(item)} style={{marginRight: 8}}>Preview</button>
+                                  <button onClick={() => handleDownload(item)} style={{marginRight: 8}}>Download</button>
+                                  <button onClick={() => handleDelete(item, vault.id)} style={{color: 'red'}}>Delete</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {vaultContent[vault.id].length > 6 && (
+                            <p className="more-content">+{vaultContent[vault.id].length - 6} more items</p>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="vault-meta">
+                        <span className={`vault-access ${vault.access.toLowerCase()}`}>
+                          {vault.access === 'private' ? <FaLock /> : <FaUsers />}
+                          {vault.access.charAt(0).toUpperCase() + vault.access.slice(1)}
+                        </span>
+                        <span className="vault-file-count">{vault.fileCount || 0} files</span>
+                        <span className="vault-size">{vault.size || '0 MB'}</span>
+                      </div>
+                      <div className="vault-footer">
+                        <span className="vault-owner">Owner: {vault.ownerEmail}</span>
+                        <div className="vault-actions">
+                          {vault.settings?.allowFileUploads && (
+                            <button 
+                              className="upload-files-btn"
+                              onClick={() => handleUploadClick(vault)}
+                              title="Upload Files"
+                            >
+                              <FaUpload />
+                            </button>
+                          )}
+                          <button
+                            className="open-vault-btn" 
+                            onClick={() => handleOpenVault(vault.id)}
+                          >
+                            Open Vault
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {!collaboratedLoading && !collaboratedError && collaboratedVaults.length === 0 && (
+                <div className="empty-vaults-message">
+                  <h3>No collaborated vaults found.</h3>
+                  <p>You haven't been added as a collaborator to any vaults yet.</p>
+                  <p className="sub-text">When someone invites you to collaborate on their vault, it will appear here.</p>
+                </div>
+              )}
+            </div>
+          </>
         )}
-    </div>
+
+        {/* Upload Modal */}
+        {showUploadModal && (
+          <div className="modal-overlay">
+            <div className="modal upload-modal">
+              <div className="modal-header">
+                <h3>Upload Files to "{selectedVault?.name}"</h3>
+                <button className="close-btn" onClick={closeUploadModal}>
+                  <FaTimes />
+            </button>
+        </div>
+
+                <div className="modal-content">
+                  <div className="file-upload-area">
+                <input
+                  type="file"
+                  multiple
+                  ref={fileInputRef}
+                      onChange={handleFileSelect}
+                  disabled={uploading}
+                      style={{ display: 'none' }}
+                    />
+                    <button 
+                      className="select-files-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      <FaUpload />
+                      {uploading ? 'Uploading...' : 'Select Files'}
+                    </button>
+                    <p className="upload-hint">Click to select files or drag and drop</p>
+                    
+                    {selectedFiles.length > 0 && (
+                      <div className="selected-files">
+                        <h4>Selected Files ({selectedFiles.length}):</h4>
+                        <ul>
+                          {selectedFiles.map((file, index) => (
+                            <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
+                          ))}
+                        </ul>
+              </div>
+            )}
+          </div>
+
+                  <div className="form-group">
+                    <label htmlFor="upload-description">Description (optional)</label>
+                    <textarea
+                      id="upload-description"
+                      value={uploadDescription}
+                      onChange={(e) => setUploadDescription(e.target.value)}
+                      placeholder="Add a description for these files..."
+                      disabled={uploading}
+                      rows="3"
+                    />
+          </div>
+
+                  {uploadError && (
+                    <div className="upload-error">
+                      <FaExclamationTriangle />
+                      <span>{uploadError}</span>
+            </div>
+                  )}
+          </div>
+
+                <div className="modal-actions">
+              <button 
+                    className="cancel-btn"
+                    onClick={closeUploadModal}
+                    disabled={uploading}
+                  >
+                    Cancel
+              </button>
+              <button 
+                    className="upload-btn"
+                    onClick={handleUploadFiles}
+                    disabled={uploading || selectedFiles.length === 0}
+                  >
+                    <FaUpload />
+                    {uploading ? 'Uploading...' : 'Upload Files'}
+              </button>
+            </div>
+            </div>
+          </div>
+        )}
+
+        {/* Collaborator Modal */}
+        {showCollaboratorModal && (
+          <div className="modal-overlay">
+            <div className="modal collaborator-modal">
+              <div className="modal-header">
+                <h3>Add Collaborator to "{selectedVault?.name}"</h3>
+                <button className="close-btn" onClick={closeCollaboratorModal}>
+                  <FaTimes />
+                </button>
+            </div>
+              
+              <div className="modal-content">
+                <div className="form-group">
+                  <label htmlFor="collaborator-email">Collaborator Email</label>
+                  <input
+                    type="email"
+                    id="collaborator-email"
+                    value={collaboratorEmail}
+                    onChange={(e) => setCollaboratorEmail(e.target.value)}
+                    placeholder="Enter the collaborator's email"
+                    disabled={sendingInvite}
+                  />
+                </div>
+
+                {inviteError && (
+                  <div className="invite-error">
+                    <FaExclamationTriangle />
+                    <span>{inviteError}</span>
+                  </div>
+                )}
+                  </div>
+
+              <div className="modal-actions">
+                <button 
+                  className="cancel-btn"
+                  onClick={closeCollaboratorModal}
+                  disabled={sendingInvite}
+                >
+                  Cancel
+                  </button>
+                <button 
+                  className="send-invite-btn"
+                  onClick={handleSendInvite}
+                  disabled={sendingInvite || !collaboratorEmail.trim()}
+                >
+                  <FaUserPlus />
+                  {sendingInvite ? 'Sending...' : 'Send Invitation'}
+                  </button>
+                </div>
+              </div>
+          </div>
+          )}
+      </div>
+    </>
   );
 };
 

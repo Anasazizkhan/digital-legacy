@@ -1,0 +1,60 @@
+.verify-email-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-family: inherit;
+  background: linear-gradient(135deg, #10141a 0%, #181e29 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #0006;
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 2.5rem 2rem;
+  color: #fff;
+  border: 1px solid rgba(59,130,246,0.08);
+}
+.verify-email-status h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.verify-email-status.success h2 {
+  color: #22c55e;
+}
+.verify-email-status.error h2 {
+  color: #ef4444;
+}
+.verify-email-status .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #3b82f6;
+  border-top: 4px solid #181e29;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.verify-email-status.success .icon {
+  color: #22c55e;
+  filter: drop-shadow(0 0 8px #22c55e44);
+}
+.verify-email-status.error .icon {
+  color: #ef4444;
+  filter: drop-shadow(0 0 8px #ef444444);
+}
+.verify-email-status.verifying h2 {
+  color: #3b82f6;
+}
+.verify-email-status p {
+  color: #cbd5e1;
+  margin-top: 8px;
+  font-size: 1rem;
+} 

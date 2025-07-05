@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaVideo, FaPlay, FaPause, FaStop, FaTrash, FaUpload, FaExclamationTriangle, FaCamera, FaTimes, FaPaperclip, FaChevronDown, FaMusic } from 'react-icons/fa';
-import { uploadAudio, uploadVideo, uploadMediaAsBase64, deleteMessageMedia } from '../services/messageService';
+import { uploadAudio, uploadVideo, uploadMediaAsBase64 } from '../services/messageService';
 import './MediaUpload.css';
 
 const MediaUpload = ({ onMediaUpload, onMediaRemove, existingMedia = {}, messageId = null }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isVideoRecording, setIsVideoRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [audioBlobUrl, setAudioBlobUrl] = useState(null);
   const [videoBlob, setVideoBlob] = useState(null);
+  const [videoBlobUrl, setVideoBlobUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
@@ -286,9 +288,9 @@ const MediaUpload = ({ onMediaUpload, onMediaRemove, existingMedia = {}, message
 
   const removeMedia = async (type) => {
     try {
-      // If we have a messageId and the media is already uploaded, delete from database
+      // If we have a messageId and the media is already uploaded, show an error or just remove from preview without backend call
       if (messageId && mediaPreview[type] && mediaPreview[type].fileName) {
-        await deleteMessageMedia(messageId, type, mediaPreview[type].fileName);
+        console.error('Media deletion is not supported for already uploaded media');
       }
       
       setMediaPreview(prev => ({ ...prev, [type]: null }));
@@ -309,6 +311,45 @@ const MediaUpload = ({ onMediaUpload, onMediaRemove, existingMedia = {}, message
   };
 
   const hasMedia = mediaPreview.audio || mediaPreview.video || audioBlob || videoBlob;
+
+  // When audioBlob changes, create/revoke blob URL
+  useEffect(() => {
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      setAudioBlobUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else if (audioBlobUrl) {
+      URL.revokeObjectURL(audioBlobUrl);
+      setAudioBlobUrl(null);
+    }
+    // eslint-disable-next-line
+  }, [audioBlob]);
+
+  // When videoBlob changes, create/revoke blob URL
+  useEffect(() => {
+    if (videoBlob) {
+      const url = URL.createObjectURL(videoBlob);
+      setVideoBlobUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else if (videoBlobUrl) {
+      URL.revokeObjectURL(videoBlobUrl);
+      setVideoBlobUrl(null);
+    }
+    // eslint-disable-next-line
+  }, [videoBlob]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
+      if (videoBlobUrl) URL.revokeObjectURL(videoBlobUrl);
+    };
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div className="media-upload-container">
@@ -495,7 +536,7 @@ const MediaUpload = ({ onMediaUpload, onMediaRemove, existingMedia = {}, message
               <FaMicrophone className="media-icon" />
               <span>Audio Recording</span>
             </div>
-            <audio controls src={URL.createObjectURL(audioBlob)} className="media-player" />
+            <audio controls src={audioBlobUrl} className="media-player" />
             <div className="media-actions-compact">
               <button
                 type="button"
@@ -522,7 +563,7 @@ const MediaUpload = ({ onMediaUpload, onMediaRemove, existingMedia = {}, message
               <FaVideo className="media-icon" />
               <span>Video Recording</span>
             </div>
-            <video controls src={URL.createObjectURL(videoBlob)} className="media-player" />
+            <video controls src={videoBlobUrl} className="media-player" />
             <div className="media-actions-compact">
               <button
                 type="button"

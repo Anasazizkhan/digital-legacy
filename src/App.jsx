@@ -17,6 +17,7 @@ import Vault from './pages/Vault';
 import CreateVault from './pages/CreateVault';
 import VaultDetail from './pages/VaultDetail';
 import AcceptCollaboration from './pages/AcceptCollaboration';
+import VerifyEmail from './pages/VerifyEmail';
 import './App.css';
 
 // Protected Route wrapper component
@@ -95,6 +96,7 @@ function App() {
               <Route path="/vault/:vaultId" element={<ProtectedRoute><VaultDetail /></ProtectedRoute>} />
               <Route path="/accept-collaboration" element={<ProtectedRoute><AcceptCollaboration /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               
               {/* Catch all route - redirect to home */}
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -217,7 +217,7 @@ const CreateVault = () => {
               disabled={loading}
             >
               <option value="standard">Standard (AES-256)</option>
-              <option value="enhanced">Enhanced (AES-256 + Key Derivation)</option>
+              <option value="high">High (AES-256 + Key Derivation)</option>
               <option value="military">Military Grade (AES-256 + Hardware Security)</option>
             </select>
           </div>

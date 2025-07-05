@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock, FaClock, FaEye, FaTrash, FaEdit, FaMicrophone, FaVideo, FaImage, FaFile, FaTimes, FaSave, FaCalendarAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserMessages, deleteMessage, deleteMessageMedia, updateMessage } from '../services/messageService';
+import { getUserMessages, updateMessage, deleteMessage } from '../services/messageService';
 import './Messages.css';
 
 const Messages = () => {
@@ -55,7 +55,7 @@ const Messages = () => {
   const handleEdit = (message) => {
     setEditingMessage(message);
     setEditForm({
-      subject: message.title || '',
+      subject: message.subject || '',
       content: message.content || '',
       scheduledFor: message.scheduledFor ? new Date(message.scheduledFor).toISOString().slice(0, 16) : '',
       recipientEmail: message.recipientEmail || ''
@@ -77,7 +77,7 @@ const Messages = () => {
       // Update the message in the local state
       setMessages(messages.map(msg => 
         msg.id === editingMessage.id 
-          ? { ...msg, ...updateData, title: editForm.subject }
+          ? { ...msg, ...updateData, subject: editForm.subject }
           : msg
       ));
       
@@ -91,17 +91,6 @@ const Messages = () => {
     } catch (err) {
       setError('Failed to update message: ' + (err.message || 'Unknown error'));
       console.error('Error updating message:', err);
-    }
-  };
-
-  const handleDeleteMedia = async (messageId, mediaType, fileName) => {
-    try {
-      await deleteMessageMedia(messageId, mediaType, fileName);
-      // Reload messages to get updated data
-      await loadMessages();
-    } catch (err) {
-      setError('Failed to delete media: ' + (err.message || 'Unknown error'));
-      console.error('Error deleting media:', err);
     }
   };
 
@@ -172,7 +161,7 @@ const Messages = () => {
               <div className="message-header">
                 <div className="message-title-section">
                   {getMessageTypeIcon(message.messageType, message.media)}
-                  <h3>{message.title}</h3>
+                  <h3>{message.subject}</h3>
                   <span className="message-type-label">
                     {getMessageTypeLabel(message.messageType, message.media)}
                   </span>
@@ -193,13 +182,6 @@ const Messages = () => {
                       <audio controls src={message.media.audio.url} />
                       <div className="media-info">
                         <span>Audio: {formatFileSize(message.media.audio.size)}</span>
-                        <button 
-                          onClick={() => handleDeleteMedia(message.id, 'audio', message.media.audio.fileName)}
-                          className="delete-media-button"
-                          title="Delete audio"
-                        >
-                          <FaTimes />
-                        </button>
                       </div>
                     </div>
                   )}
@@ -210,13 +192,6 @@ const Messages = () => {
                       <video controls src={message.media.video.url} />
                       <div className="media-info">
                         <span>Video: {formatFileSize(message.media.video.size)}</span>
-                        <button 
-                          onClick={() => handleDeleteMedia(message.id, 'video', message.media.video.fileName)}
-                          className="delete-media-button"
-                          title="Delete video"
-                        >
-                          <FaTimes />
-                        </button>
                       </div>
                     </div>
                   )}
@@ -232,13 +207,6 @@ const Messages = () => {
                               alt={`Attachment ${index + 1}`}
                               className="message-image"
                             />
-                            <button 
-                              onClick={() => handleDeleteMedia(message.id, 'image', image.fileName)}
-                              className="delete-media-button image-delete"
-                              title="Delete image"
-                            >
-                              <FaTimes />
-                            </button>
                           </div>
                         ))}
                       </div>

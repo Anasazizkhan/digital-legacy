@@ -303,6 +303,50 @@ const VaultDetail = () => {
     return item.type === 'text' || item.fileType === 'text/plain' || item.content;
   };
 
+  // Add handlers for preview, download, and delete
+  const handlePreview = (item) => {
+    if (!item.url && !item.fileUrl) {
+      alert('No preview available for this file.');
+      return;
+    }
+    window.open(item.url || item.fileUrl, '_blank');
+  };
+
+  const handleDownload = async (item) => {
+    const url = item.url || item.fileUrl;
+    if (!url) {
+      alert('No download available for this file.');
+      return;
+    }
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = item.name || 'file';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      alert('Failed to download file: ' + error.message);
+    }
+  };
+
+  const handleDelete = async (item) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
+    try {
+      await vaultService.deleteVaultContent(vaultId, item.id);
+      alert('File deleted!');
+      // Refresh content
+      await loadVaultData();
+    } catch (error) {
+      alert('Failed to delete file: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   if (loading) {
     return (
       <div className="vault-detail-page">
@@ -422,15 +466,9 @@ const VaultDetail = () => {
                       </div>
                     </div>
                     <div className="content-actions">
-                      <button className="action-btn" title="View">
-                        <FaEye />
-                      </button>
-                      <button className="action-btn" title="Download">
-                        <FaDownload />
-                      </button>
-                      <button className="action-btn delete" title="Delete">
-                        <FaTrash />
-                      </button>
+                      <button className="action-btn" title="View" onClick={() => handlePreview(item)}><FaEye /></button>
+                      <button className="action-btn" title="Download" onClick={() => handleDownload(item)}><FaDownload /></button>
+                      <button className="action-btn delete" title="Delete" onClick={() => handleDelete(item)}><FaTrash /></button>
                     </div>
                   </>
                 )}
